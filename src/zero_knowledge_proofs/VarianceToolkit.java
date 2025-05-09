@@ -1310,7 +1310,7 @@ abstract public class VarianceToolkit {
 
 			ECPedersenCommitment otherTotalComm = commitments[0];
 			for(int i = 1; i < n; i++){
-				otherTotalComm = otherTotalComm.multiplyCommitment(commitments[i], commitmentEnvirionment);
+				otherTotalComm = (ECPedersenCommitment) otherTotalComm.multiplyCommitment(commitments[i], commitmentEnvirionment);
 			}
 			andOuter[1] = createSchnorrVerifierInputsNoChecks(new ECPointData(otherTotalComm.getCommitment(commitmentEnvirionment)));
 			return new CryptoDataArray(andOuter);
@@ -1398,7 +1398,7 @@ abstract public class VarianceToolkit {
 			ECPedersenCommitment totalComm = commitments[0];
 			BigInteger totalKey = ephemeralKey[0];
 			for(int i = 1; i < n; i++){
-				totalComm = totalComm.multiplyCommitment(commitments[i], baseEnvironment);
+				totalComm = (ECPedersenCommitment) totalComm.multiplyCommitment(commitments[i], baseEnvironment);
 				totalKey = totalKey.add(ephemeralKey[i]);
 			}
 			andOuter[1] = createSchnorrProverInputsNoChecks(new ECPointData(totalComm.getCommitment(baseEnvironment)), new BigIntData(totalKey), order, rand);
@@ -1461,7 +1461,7 @@ abstract public class VarianceToolkit {
 
 			ECPedersenCommitment totalComm = commitments[0];
 			for(int i = 1; i < n; i++){
-				totalComm = totalComm.multiplyCommitment(commitments[i], baseEnvironment);
+				totalComm = (ECPedersenCommitment) totalComm.multiplyCommitment(commitments[i], baseEnvironment);
 			}
 			andOuter[1] = createSchnorrSimulatorInputsNoChecks(new ECPointData(totalComm.getCommitment(baseEnvironment)), order, rand);
 			return new CryptoDataArray(andOuter);

@@ -8,7 +8,7 @@ import zero_knowledge_proofs.CryptoData.CryptoDataArray;
 public class DLSchnorrProver extends ZKPProtocol {
 
 
-	//input format:  [y, r, x]
+	//input format:  [y], [r, x]
 
 	@Override
 	public CryptoData initialComm(CryptoData input, CryptoData environment) {
@@ -403,17 +403,17 @@ public class DLSchnorrProver extends ZKPProtocol {
 		CryptoData toReturn = new CryptoDataArray(data);
 		return toReturn;
 	}
-
 	@Override
 	public CryptoData initialCommSim(CryptoData publicInput, CryptoData secrets, BigInteger challenge,
 			CryptoData environment)
 					throws MultipleTrueProofException, ArraySizesDoNotMatchException, NoTrueProofException {
+
 		BigInteger[] data = new BigInteger[1];
 		CryptoData[] pI = publicInput.getCryptoDataArray();
 		CryptoData[] s = secrets.getCryptoDataArray();
 		CryptoData[] e = environment.getCryptoDataArray();		//(y, z) 
-		BigInteger y = s[0].getBigInt();
-		BigInteger z = pI[0].getBigInt();
+		BigInteger y = pI[0].getBigInt();
+		BigInteger z = s[0].getBigInt();
 		BigInteger g = e[1].getBigInt();
 		BigInteger p = e[0].getBigInt();
 		//a = g^z * y^(-c)

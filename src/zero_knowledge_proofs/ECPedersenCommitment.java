@@ -9,7 +9,7 @@ import org.bouncycastle.math.ec.ECPoint;
 
 import zero_knowledge_proofs.CryptoData.CryptoData;
 
-public class ECPedersenCommitment implements Serializable {
+public class ECPedersenCommitment extends PedersenCommitment implements Serializable {
 	
 	/**
 	 * 
@@ -55,12 +55,14 @@ public class ECPedersenCommitment implements Serializable {
 		return getCommitment(environment).equals(comm);
 	}
 
-	public ECPedersenCommitment multiplyCommitment(ECPedersenCommitment cmt, CryptoData environment) {
-		
+	public PedersenCommitment multiplyCommitment(PedersenCommitment _cmt, CryptoData environment) {
+
+		ECPedersenCommitment cmt = (ECPedersenCommitment) _cmt;
 		return new ECPedersenCommitment(cmt.getCommitment(environment).add(getCommitment(environment)));
 	}
-	public ECPedersenCommitment multiplyShiftedCommitment(ECPedersenCommitment cmt, int lShift, CryptoData environment) {
-		
+	public ECPedersenCommitment multiplyShiftedCommitment(PedersenCommitment _cmt, int lShift, CryptoData environment) {
+
+		ECPedersenCommitment cmt = (ECPedersenCommitment) _cmt;
 		return new ECPedersenCommitment((cmt.getCommitment(environment).multiply(BigInteger.ONE.shiftLeft(lShift))).add(getCommitment(environment)));
 	}
 	

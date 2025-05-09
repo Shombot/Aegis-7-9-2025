@@ -104,6 +104,37 @@ public abstract class ZKPProtocol{
 		else System.out.println("BAD CHALLENGE COMMITMENT");
 		return valid;
 	}
+	/**
+	 * An true ZKP protocol, where the challenge is committed beforehand.
+	 * 
+	 * @param publicInput Whatever public inputs are required for the ZKP
+	 * @param secrets Whatever secret inputs are required for the ZKP
+	 * @throws IOException 
+	 * @throws ClassNotFoundException 
+	 * @throws MultipleTrueProofException 
+	 * @throws ArraySizesDoNotMatchException 
+	 * @throws NoTrueProofException 
+	 */
+	public boolean trueZKProve(CryptoData publicInput, CryptoData secrets, CryptoData environment, CryptoData commitmentEnvironment, ObjectInputStream in, ObjectOutputStream out) throws ClassNotFoundException, IOException, MultipleTrueProofException, NoTrueProofException, ArraySizesDoNotMatchException {
+		CryptoData a = initialComm(publicInput, secrets, environment);
+		PedersenCommitment cCmt = (PedersenCommitment) in.readObject();
+		out.writeObject(a);
+		out.flush();
+		BigInteger[] c = (BigInteger[]) in.readObject();
+		boolean valid = cCmt.verifyCommitment(c[0], c[1], commitmentEnvironment);
+		out.writeObject(valid);
+		out.flush();
+		if(valid)
+		{
+			CryptoData z = calcResponse(publicInput, secrets, c[0], environment);
+			out.writeObject(z);
+			out.flush();
+			boolean toReturn = (boolean) in.readObject();
+			return toReturn;
+		}
+		else System.out.println("BAD CHALLENGE COMMITMENT");
+		return valid;
+	}
 	
 	
 	/**
@@ -461,7 +492,7 @@ public abstract class ZKPProtocol{
 		
 		return toReturn;
 	}
-	public boolean maliciousVerify(CryptoData input, ECPedersenCommitment cCmt, BigInteger[] challenge, CryptoData environment, ObjectInputStream in, ObjectOutputStream out, StringBuilder transcriptOut) throws IOException, ClassNotFoundException
+	public boolean maliciousVerify(CryptoData input, PedersenCommitment cCmt, BigInteger[] challenge, CryptoData environment, ObjectInputStream in, ObjectOutputStream out, StringBuilder transcriptOut) throws IOException, ClassNotFoundException
 	{
 		out.writeObject(cCmt);
 		out.flush();
@@ -626,8 +657,6 @@ public abstract class ZKPProtocol{
 	public CryptoData[] proveFiatShamir(CryptoData publicInput, CryptoData secrets, CryptoData environment) throws IOException, ClassNotFoundException, MultipleTrueProofException, NoTrueProofException, ArraySizesDoNotMatchException {
 		
 		CryptoData a = initialComm(publicInput, secrets, environment);
-		byte[][] bytes = new byte[][] {a.getBytes(),environment.getBytes(),publicInput.getBytes()};
-		
 		BigInteger c = fiatShamirChallange(publicInput, a, environment);
 		CryptoData z = calcResponse(publicInput, secrets, c, environment);
 		return new CryptoData[] {a, z};
@@ -673,7 +702,6 @@ public abstract class ZKPProtocol{
 			System.out.println(publicInput);
 			System.out.println();
 		}
-		byte[][] bytes = new byte[][] {a.getBytes(),environment.getBytes(),publicInput.getBytes()};
 		BigInteger c = fiatShamirChallange(publicInput, a, environment);
 		
 		return verifyResponse(publicInput, a, z, c, environment);

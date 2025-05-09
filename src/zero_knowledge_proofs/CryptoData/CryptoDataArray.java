@@ -45,13 +45,7 @@ public class CryptoDataArray extends CryptoData {
 		this.data = new CryptoData[data.length];
 		for(int i = 0; i < data.length; i++)
 		{
-			if(data[i] == null) {
-				this.data[i] = null;
-				if(nulls == null) nulls = new LinkedList<Integer>();
-				nulls.add(i);
-			}
-			else
-				this.data[i] = new BigIntData(data[i]);
+			this.data[i] = new BigIntData(data[i]);
 		}
 
 	}

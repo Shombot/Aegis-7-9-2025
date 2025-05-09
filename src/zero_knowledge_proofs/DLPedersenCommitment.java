@@ -6,7 +6,7 @@ import java.util.Base64;
 
 import zero_knowledge_proofs.CryptoData.CryptoData;
 
-public class DLPedersenCommitment implements Serializable {
+public class DLPedersenCommitment extends PedersenCommitment implements Serializable {
 	/**
 	 * 
 	 */
@@ -42,12 +42,18 @@ public class DLPedersenCommitment implements Serializable {
 
 	}
 
-	public DLPedersenCommitment multiplyCommitment(DLPedersenCommitment cmt, CryptoData env) {
+	public DLPedersenCommitment multiplyCommitment(PedersenCommitment _cmt, CryptoData env) {
+		DLPedersenCommitment cmt = (DLPedersenCommitment) _cmt;
 		CryptoData[] e = env.getCryptoDataArray();
 		return new DLPedersenCommitment(commitment.multiply(cmt.getCommitment()).mod(e[0].getBigInt()));
 	}
 	public String toString64()
 	{
 		return Base64.getEncoder().encodeToString(commitment.toByteArray());
+	}
+	@Override
+	public PedersenCommitment multiplyShiftedCommitment(PedersenCommitment cmt, int lShift, CryptoData environment) {
+		// TODO Auto-generated method stub
+		return null;
 	}	
 }
