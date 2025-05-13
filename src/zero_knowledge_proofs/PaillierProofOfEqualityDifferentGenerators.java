@@ -74,9 +74,9 @@ public class PaillierProofOfEqualityDifferentGenerators extends ZKPProtocol {
 		if (publicInput == null || secrets == null) return null;
 		try {
 			BigInteger[] data = new BigInteger[2];
-			CryptoData[] e = environment.getCryptoDataArray();  // e = [g1, g2, n, n^2]
 			CryptoData[] i = publicInput.getCryptoDataArray();	// i = [cipher1, cipher2]
 			CryptoData[] s = secrets.getCryptoDataArray();		// s = [z1, z2, z3]
+			CryptoData[] e = environment.getCryptoDataArray();  // e = [n, n^2, g1, g2]
 
 			BigInteger g1 = e[2].getBigInt();
 			BigInteger g2 = e[3].getBigInt();
