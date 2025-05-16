@@ -40,10 +40,14 @@ public class PaillierRSAProofTest {
 
 			BigInteger pm1 = privKey.getPrimeP().subtract(BigInteger.ONE);
 			BigInteger qm1 = privKey.getPrimeQ().subtract(BigInteger.ONE);
+			System.out.println(pm1.divide(BigInteger.TWO).isProbablePrime(50));
+			System.out.println(qm1.divide(BigInteger.TWO).isProbablePrime(50));
 			n = privKey.getModulus();
 			n2 = n.pow(2);
 			BigInteger mul = pm1.multiply(qm1);
 			BigInteger gcd = pm1.gcd(qm1);
+			BigInteger order = pm1.multiply(qm1);
+			System.out.println(n.divideAndRemainder(order)[1]);
 			//		        Util.destroyBigInteger(pm1);
 			//		        Util.destroyBigInteger(qm1);
 			pm1 = null;
@@ -80,30 +84,30 @@ public class PaillierRSAProofTest {
 				//			BigInteger pailCipher3 = r2.modPow(n, n2);
 				BigInteger rsaCipher = m.modPow(e, n);
 
-				//			{// test equal messages different DL
-				//				CryptoData publicInputs = new CryptoDataArray(new BigInteger[] {pailCipher, pailCipher2});
-				//				CryptoData secrets = new CryptoDataArray(new BigInteger[] {ZKToolkit.random(n, rand),ZKToolkit.random(n, rand),ZKToolkit.random(n, rand),r, r2, m});
-				//				CryptoData environment = new CryptoDataArray(new BigInteger[] {n, n2, g1, g2});
-				//				ZKPProtocol blah = new PaillierProofOfEqualityDifferentGenerators();
-				//				CryptoData[] blahOut = blah.proveFiatShamir(publicInputs, secrets, environment);
-				//				if(blah.verifyFiatShamir(publicInputs, blahOut[0], blahOut[1], environment)) {
-				//					System.out.println("preSuccess1");
-				//				} else {
-				//					System.out.println("preFail1");
-				//				}
-				//			}			
-				//			{// test paillierHidesZero
-				//				CryptoData publicInputs = new CryptoDataArray(new BigInteger[] {pailCipher3});
-				//				CryptoData secrets = new CryptoDataArray(new BigInteger[] {ZKToolkit.random(n, rand), r2});
-				//				CryptoData environment = new CryptoDataArray(new BigInteger[] {n, n2, g2});
-				//				ZKPProtocol blah = new PaillierProofOfZero();
-				//				CryptoData[] blahOut = blah.proveFiatShamir(publicInputs, secrets, environment);
-				//				if(blah.verifyFiatShamir(publicInputs, blahOut[0], blahOut[1], environment)) {
-				//					System.out.println("preSuccess2");
-				//				} else {
-				//					System.out.println("preFail2");
-				//				}
-				//			}
+//			{// test equal messages different DL
+//				CryptoData publicInputs = new CryptoDataArray(new BigInteger[] {pailCipher, pailCipher2});
+//				CryptoData secrets = new CryptoDataArray(new BigInteger[] {ZKToolkit.random(n, rand),ZKToolkit.random(n, rand),ZKToolkit.random(n, rand),r, r2, m});
+//				CryptoData environment = new CryptoDataArray(new BigInteger[] {n, n2, g1, g2});
+//				ZKPProtocol blah = new PaillierProofOfEqualityDifferentGenerators();
+//				CryptoData[] blahOut = blah.proveFiatShamir(publicInputs, secrets, environment);
+//				if(blah.verifyFiatShamir(publicInputs, blahOut[0], blahOut[1], environment)) {
+//					System.out.println("preSuccess1");
+//				} else {
+//					System.out.println("preFail1");
+//				}
+//			}			
+//			{// test paillierHidesZero
+//				CryptoData publicInputs = new CryptoDataArray(new BigInteger[] {pailCipher3});
+//				CryptoData secrets = new CryptoDataArray(new BigInteger[] {ZKToolkit.random(n, rand), r2});
+//				CryptoData environment = new CryptoDataArray(new BigInteger[] {n, n2, g2});
+//				ZKPProtocol blah = new PaillierProofOfZero();
+//				CryptoData[] blahOut = blah.proveFiatShamir(publicInputs, secrets, environment);
+//				if(blah.verifyFiatShamir(publicInputs, blahOut[0], blahOut[1], environment)) {
+//					System.out.println("preSuccess2");
+//				} else {
+//					System.out.println("preFail2");
+//				}
+//			}
 				{
 					CryptoData publicInputs = new CryptoDataArray(new BigInteger[] {rsaCipher, pailCipher});
 					CryptoData secrets = new CryptoDataArray(new BigInteger[] {m, r});

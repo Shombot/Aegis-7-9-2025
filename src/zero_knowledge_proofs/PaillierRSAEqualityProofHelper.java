@@ -39,23 +39,23 @@ public abstract class PaillierRSAEqualityProofHelper{
 		BigInteger g = envArray[3].getBigInt();
 		
 		int eLength = e.bitLength();
-		CryptoData[] intermediateC = new CryptoData[eLength];
+		CryptoData[] intermediateC = new CryptoData[eLength-1];
 		
-		CryptoData[] proof1Pub = new CryptoData[e.bitLength()];
-		CryptoData[] proof2Pub = new CryptoData[e.bitCount()];
+		CryptoData[] proof1Pub = new CryptoData[e.bitLength()-1];
+		CryptoData[] proof2Pub = new CryptoData[e.bitCount()-1];
 		
-		CryptoData[] proof1Sec = new CryptoData[e.bitLength()];
-		CryptoData[] proof2Sec = new CryptoData[e.bitCount()];
+		CryptoData[] proof1Sec = new CryptoData[e.bitLength()-1];
+		CryptoData[] proof2Sec = new CryptoData[e.bitCount()-1];
 		
-		CryptoData[] proof1Env = new CryptoData[e.bitLength()];
-		CryptoData[] proof2Env = new CryptoData[e.bitCount()];
+		CryptoData[] proof1Env = new CryptoData[e.bitLength()-1];
+		CryptoData[] proof2Env = new CryptoData[e.bitCount()-1];
 		
-		BigInteger cIMinus1 = g;
-		BigInteger muIMinus1 = BigInteger.ONE;
-		BigInteger rhoIMinus1 = BigInteger.ONE;
+		BigInteger cIMinus1 = pailCipher;
+		BigInteger muIMinus1 = m;
+		BigInteger rhoIMinus1 = r;
 		
 		
-		for(int i = 0, j = 0; i < e.bitLength(); i++) {
+		for(int i = 0, j = 0; i < e.bitLength()-1; i++) {
 			
 			BigInteger rhoI;
 			BigInteger gamma = ZKToolkit.random(n, rand);
@@ -64,7 +64,7 @@ public abstract class PaillierRSAEqualityProofHelper{
 			
 			BigInteger cI = null;
 
-			if(e.testBit((e.bitLength()-1)-i)) { //if the bit is equal to 1
+			if(e.testBit((e.bitLength()-1)-(i+1))) { //if the bit is equal to 1
 
 				BigInteger betaI = ZKToolkit.random(n, rand);
 				cI = cPrimeI.modPow(m, n2).multiply(betaI.modPow(n, n2)).mod((n2));
@@ -149,19 +149,19 @@ public abstract class PaillierRSAEqualityProofHelper{
 		BigInteger e = envArray[2].getBigInt();
 		BigInteger g = envArray[3].getBigInt();
 		
-		CryptoData[] proof1Pub = new CryptoData[e.bitLength()];
-		CryptoData[] proof2Pub = new CryptoData[e.bitCount()];
+		CryptoData[] proof1Pub = new CryptoData[e.bitLength()-1];
+		CryptoData[] proof2Pub = new CryptoData[e.bitCount()-1];
 		
-		CryptoData[] proof1Env = new CryptoData[e.bitLength()];
-		CryptoData[] proof2Env = new CryptoData[e.bitCount()];
+		CryptoData[] proof1Env = new CryptoData[e.bitLength()-1];
+		CryptoData[] proof2Env = new CryptoData[e.bitCount()-1];
 		
 		
-		BigInteger cIMinus1 = g;
+		BigInteger cIMinus1 = pailCipher;
 		
-		for(int i = 0, j = 0; i < e.bitLength(); i++) {
+		for(int i = 0, j = 0; i < e.bitLength()-1; i++) {
 			CryptoData[] cInner = intermediateCArray[i].getCryptoDataArray();
 			BigInteger cI;
-			if(e.testBit((e.bitLength()-1)-i)) { //if the bit is equal to 1
+			if(e.testBit((e.bitLength()-1)-(i+1))) { //if the bit is equal to 1
 				BigInteger cPrimeI = cInner[0].getBigInt();
 				cI = cInner[1].getBigInt();
 				proof1Pub[i] = new CryptoDataArray(new BigInteger[] {cIMinus1, cPrimeI});
@@ -208,16 +208,16 @@ public abstract class PaillierRSAEqualityProofHelper{
 		ZKPProtocol proofOfZero = new PaillierProofOfZero();
 		
 		
-		ZKPProtocol[] proof1 = new ZKPProtocol[e.bitLength()];
-		ZKPProtocol[] proof2 = new ZKPProtocol[e.bitCount()];
+		ZKPProtocol[] proof1 = new ZKPProtocol[e.bitLength()-1];
+		ZKPProtocol[] proof2 = new ZKPProtocol[e.bitCount()-1];
 		int eLength = e.bitLength();
 		int eCount = e.bitCount();
-		for (int i = 0; i < eLength; i++) {
+		for (int i = 0; i < eLength-1; i++) {
 			proof1[i] = proofOfEqualMessages;
 		}
 		ZKPProtocol proof1Packed = new ZeroKnowledgeAndProver(proof1);
 		
-		for (int i = 0; i < eCount; i++) {
+		for (int i = 0; i < eCount-1; i++) {
 			proof2[i] = proofOfEqualMessages;
 		}
 		ZKPProtocol proof2Packed = new ZeroKnowledgeAndProver(proof2);
