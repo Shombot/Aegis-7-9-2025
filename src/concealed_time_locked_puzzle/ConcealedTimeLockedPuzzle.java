@@ -1,7 +1,17 @@
 package concealed_time_locked_puzzle;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
 import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -19,10 +29,14 @@ import zero_knowledge_proofs.ZeroKnowledgeAndProver;
 import zero_knowledge_proofs.CryptoData.CryptoData;
 import zero_knowledge_proofs.CryptoData.CryptoDataArray;
 
-public class ConcealedTimeLockedPuzzle {
+public class ConcealedTimeLockedPuzzle implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4521566575437549862L;
 	//values private to creator
-	private transient BigInteger r1;
-	private transient BigInteger r2;
+	private transient BigInteger rM;
+	private transient BigInteger rH;
 	private transient BigInteger p;
 	private transient BigInteger q;
 	private transient BigInteger m;
@@ -95,16 +109,16 @@ public class ConcealedTimeLockedPuzzle {
 
 		BigInteger totalPuzzleExponent = BigInteger.TWO.modPow(delta, orderN);
 
-		r1 = ZKToolkit.random(n, rand);
-		r2 = ZKToolkit.random(n, rand);
+		rM = ZKToolkit.random(n, rand);
+		rH = ZKToolkit.random(n, rand);
 
 
 		//Define terms
 		c1 = m.modPow(e, n);
 		c2 = h.modPow(e, n);
 		c3 = c2.modPow(totalPuzzleExponent, n);
-		c4 = g.modPow(m, n2).multiply(r1.modPow(n, n2)).mod(n2);
-		c5 = g.modPow(h, n2).multiply(r2.modPow(n, n2)).mod(n2);
+		c4 = g.modPow(m, n2).multiply(rM.modPow(n, n2)).mod(n2);
+		c5 = g.modPow(h, n2).multiply(rH.modPow(n, n2)).mod(n2);
 		c6 = m.multiply(h.modPow(totalPuzzleExponent, n)).mod(n);
 
 		//Create proofs, blocks for variable name scoping
@@ -113,7 +127,7 @@ public class ConcealedTimeLockedPuzzle {
 			ZKPProtocol proof = PaillierRSAEqualityProofHelper.createProof(e);
 			{
 				CryptoData publicInputs = new CryptoDataArray(new BigInteger[] {c1, c4});
-				CryptoData secrets = new CryptoDataArray(new BigInteger[] {m, r1});
+				CryptoData secrets = new CryptoDataArray(new BigInteger[] {m, rM});
 				CryptoData[] proofDataOut = PaillierRSAEqualityProofHelper.proverGetIntermediateInputs(publicInputs, secrets, environment, rand);
 				CryptoData[] transcript = proof.proveFiatShamir(proofDataOut[1], proofDataOut[2], proofDataOut[3]);
 				step3ProofDataAndTranscript = new CryptoData[] {transcript[0], transcript[1], proofDataOut[0]};
@@ -121,7 +135,7 @@ public class ConcealedTimeLockedPuzzle {
 			{
 
 				CryptoData publicInputs = new CryptoDataArray(new BigInteger[] {c2, c5});
-				CryptoData secrets = new CryptoDataArray(new BigInteger[] {h, r2});
+				CryptoData secrets = new CryptoDataArray(new BigInteger[] {h, rH});
 				CryptoData[] proofDataOut = PaillierRSAEqualityProofHelper.proverGetIntermediateInputs(publicInputs, secrets, environment, rand);
 				CryptoData[] transcript = proof.proveFiatShamir(proofDataOut[1], proofDataOut[2], proofDataOut[3]);
 				step4ProofDataAndTranscript = new CryptoData[] {transcript[0], transcript[1], proofDataOut[0]};
@@ -177,6 +191,12 @@ public class ConcealedTimeLockedPuzzle {
 
 	}
 	
+	public BigInteger getRM() {
+		return rM;
+	}
+	public BigInteger getRH() {
+		return rH;
+	}
 	public boolean verifyPuzzle() {
 		BigInteger n2 = n.pow(2);
 		BigInteger g = n.add(BigInteger.ONE);
@@ -194,7 +214,6 @@ public class ConcealedTimeLockedPuzzle {
 				}
 			} catch (ClassNotFoundException | IOException | MultipleTrueProofException | NoTrueProofException
 					| ArraySizesDoNotMatchException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 				return false;
 			}
@@ -270,15 +289,103 @@ public class ConcealedTimeLockedPuzzle {
 		BigInteger delta = this.delta;
 		BigInteger inProgress = discoveredH;
 		while(!delta.equals(BigInteger.ZERO)) {
-			inProgress = inProgress.modPow(BigInteger.TWO, n);
-			delta = delta.subtract(BigInteger.ONE);
+			inProgress = inProgress.modPow(BigInteger.TWO, n); 
+			delta = delta.subtract(BigInteger.ONE); 
 		}
-		return c6.multiply(inProgress.modInverse(n));
+		return c6.multiply(inProgress.modInverse(n)).mod(n);
+	}
+	
+	public BigInteger doWork(BigInteger discoveredH, File file) {
+		BigInteger delta = this.delta;
+		BigInteger inProgress = discoveredH;
+		if(file.exists()) {
+			try {
+				ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
+				delta = (BigInteger) in.readObject();
+				inProgress = (BigInteger) in.readObject();
+				in.close();
+			} catch (Exception e) {
+				try {
+					File backup = new File(file.getPath() + ".bak");
+					if(backup.exists()) {
+						ObjectInputStream in = new ObjectInputStream(new FileInputStream(backup));
+						delta = (BigInteger) in.readObject();
+						inProgress = (BigInteger) in.readObject();
+						in.close();
+					}
+				}
+				catch(Exception e2) {
+					delta = this.delta;
+					inProgress = discoveredH;
+				}
+			}
+		}
+		final BigInteger saveFrequency = BigInteger.valueOf(500000);
+		Thread saveProcess = null;
+		while(!delta.equals(BigInteger.ZERO)) {
+			inProgress = inProgress.modPow(BigInteger.TWO, n); 
+			delta = delta.subtract(BigInteger.ONE); 
+			if(file != null && delta.mod(saveFrequency).equals(BigInteger.ZERO)) {
+				try {
+					saveProcess.join();
+					saveProcess = new Thread(new SaveThread(delta, inProgress, file));
+					saveProcess.start();
+				} catch (Exception e) {
+					
+				}
+			}
+		}
+		if(file != null) {
+			try {
+				saveProcess.join();
+				saveProcess = new Thread(new SaveThread(delta, inProgress, file));
+				saveProcess.start();
+				saveProcess.join();
+			} catch (Exception e) {
+				
+			}
+		}
+		return c6.multiply(inProgress.modInverse(n)).mod(n);
 	}
 	public BigInteger getMCipher() {
 		return c4;
 	}
 	public BigInteger getHCipher() {
 		return c5;
+	}
+	private static class SaveThread implements Runnable {
+		private BigInteger delta;
+		private BigInteger inProgress;
+		private File file;
+		
+		public SaveThread(BigInteger delta, BigInteger inProgress, File file) {
+			this.delta = delta;
+			this.inProgress = inProgress;
+			this.file = file;
+		}
+
+		@Override
+		public void run() {
+			File backup = new File(file.getPath() + ".bak");
+			ObjectOutputStream out;
+			try {
+				Files.copy(file.toPath(), backup.toPath(), StandardCopyOption.REPLACE_EXISTING);
+				out = new ObjectOutputStream(new FileOutputStream(file, false));
+				out.writeObject(delta);
+				out.writeObject(inProgress);
+				out.flush();
+				out.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	public BigInteger getN() {
+		return n;
+	}
+
+	public BigInteger getG() {
+		return n.add(BigInteger.ONE);
 	}
 }

@@ -5,6 +5,8 @@ import java.math.BigInteger;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.math.ec.ECPoint;
 
+import curve_wrapper.ECCurveWrapper;
+import curve_wrapper.ECPointWrapper;
 import zero_knowledge_proofs.CryptoData.BigIntData;
 import zero_knowledge_proofs.CryptoData.CryptoData;
 import zero_knowledge_proofs.CryptoData.CryptoDataArray;
@@ -31,10 +33,10 @@ public class ECDummyBallot10bProver extends ZKPProtocol {
 		CryptoData[] secIn = secrets.getCryptoDataArray();
 		CryptoData[] envIn = environment.getCryptoDataArray();
 		
-//		ECPoint[] pubInPoint = new ECPoint[pubIn.length];
+//		ECPointWrapper[] pubInPoint = new ECPointWrapper[pubIn.length];
 		BigInteger[] secInInt = new BigInteger[secIn.length/2];
-		ECCurve curve = envIn[0].getECCurveData();
-		ECPoint[] envInPoint = new ECPoint[envIn.length];
+		ECCurveWrapper curve = envIn[0].getECCurveData();
+		ECPointWrapper[] envInPoint = new ECPointWrapper[envIn.length];
 		for(int i = 0; i < secInInt.length; i++) {
 			secInInt[i] = secIn[i].getBigInt();	
 		}
@@ -68,10 +70,10 @@ public class ECDummyBallot10bProver extends ZKPProtocol {
 		CryptoData[] secIn = secrets.getCryptoDataArray();
 		CryptoData[] envIn = environment.getCryptoDataArray();
 		
-		ECPoint[] pubInPoint = new ECPoint[pubIn.length];
+		ECPointWrapper[] pubInPoint = new ECPointWrapper[pubIn.length];
 		BigInteger[] secInInt = new BigInteger[secIn.length];
-		ECCurve curve = envIn[0].getECCurveData();
-		ECPoint[] envInPoint = new ECPoint[envIn.length];
+		ECCurveWrapper curve = envIn[0].getECCurveData();
+		ECPointWrapper[] envInPoint = new ECPointWrapper[envIn.length];
 		for(int i = 0; i < pubInPoint.length; i++) {
 			pubInPoint[i] = pubIn[i].getECPointData(curve);	
 		}
@@ -106,7 +108,7 @@ public class ECDummyBallot10bProver extends ZKPProtocol {
 		CryptoData[] envIn = environment.getCryptoDataArray();
 		
 		BigInteger[] secInInt = new BigInteger[secIn.length];
-		ECCurve curve = envIn[0].getECCurveData();
+		ECCurveWrapper curve = envIn[0].getECCurveData();
 		BigInteger order = curve.getOrder();
 		for(int i = 0; i < secInInt.length; i++) {
 			secInInt[i] = secIn[i].getBigInt();	
@@ -141,12 +143,12 @@ public class ECDummyBallot10bProver extends ZKPProtocol {
 		CryptoData[] zIn = z.getCryptoDataArray();
 		
 		
-		ECPoint[] pubInPoint = new ECPoint[pubIn.length];
+		ECPointWrapper[] pubInPoint = new ECPointWrapper[pubIn.length];
 		BigInteger[] zInInt = new BigInteger[8];
-		ECPoint[] aInPoint = new ECPoint[5];
-		ECCurve curve = envIn[0].getECCurveData();
+		ECPointWrapper[] aInPoint = new ECPointWrapper[5];
+		ECCurveWrapper curve = envIn[0].getECCurveData();
 		BigInteger order = curve.getOrder();
-		ECPoint[] envInPoint = new ECPoint[5];
+		ECPointWrapper[] envInPoint = new ECPointWrapper[5];
 		for(int i = 0; i < pubInPoint.length; i++) {
 			pubInPoint[i] = pubIn[i].getECPointData(curve);	
 		}
@@ -161,8 +163,8 @@ public class ECDummyBallot10bProver extends ZKPProtocol {
 			zInInt[i] = zIn[i].getBigInt();
 		}
 		
-		ECPoint[] left = new ECPoint[5];
-		ECPoint[] right = new ECPoint[5];
+		ECPointWrapper[] left = new ECPointWrapper[5];
+		ECPointWrapper[] right = new ECPointWrapper[5];
 		
 		left[0] = envInPoint[0].multiply(zInInt[0].add(zInInt[1]).mod(order));
 		left[1] = envInPoint[1].multiply(zInInt[0]).add(envInPoint[2].multiply(zInInt[2]));

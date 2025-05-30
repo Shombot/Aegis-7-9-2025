@@ -15,6 +15,9 @@ import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.math.ec.ECPoint;
 
+import curve_wrapper.BouncyCastlePoint;
+import curve_wrapper.ECCurveWrapper;
+import curve_wrapper.ECPointWrapper;
 import poly.PolyLock;
 import zero_knowledge_proofs.ArraySizesDoNotMatchException;
 import zero_knowledge_proofs.MultipleTrueProofException;
@@ -42,15 +45,15 @@ public class PolyLockTester {
 					ECNamedCurveParameterSpec spec = ECNamedCurveTable.getParameterSpec("secp256k1");
 
 					SecureRandom rand = new SecureRandom();
-					ECCurve c = spec.getCurve();
-					ECPoint g = spec.getG();
+					ECPointWrapper g = new BouncyCastlePoint(spec.getG());
+					ECCurveWrapper c = g.getCurve();
 					BigInteger order = c.getOrder();
-					ECPoint h = g.multiply(ZKToolkit.random(order, rand));
+					ECPointWrapper h = g.multiply(ZKToolkit.random(order, rand));
 
 					int n = j;
 
-					ECCurve[] curves = new ECCurve[n];
-					ECPoint[][] gens = new ECPoint[n][2];
+					ECCurveWrapper[] curves = new ECCurveWrapper[n];
+					ECPointWrapper[][] gens = new ECPointWrapper[n][2];
 
 					curves[0] = c;
 
@@ -71,21 +74,21 @@ public class PolyLockTester {
 					else
 					{
 						ECNamedCurveParameterSpec spec2 = ECNamedCurveTable.getParameterSpec("curve25519");
-						ECPoint g2 = spec2.getG();
-						ECPoint h2 = g2.multiply(ZKToolkit.random(spec2.getCurve().getOrder(), rand));
+						ECPointWrapper g2 = new BouncyCastlePoint(spec2.getG());
+						ECPointWrapper h2 = g2.multiply(ZKToolkit.random(spec2.getCurve().getOrder(), rand));
 						for(int i = 1; i < n; i++) {
-							curves[i] = spec2.getCurve();
+							curves[i] = g2.getCurve();
 	
 							gens[i][0] = g2;
 							gens[i][1] = h2;
 						}
 					}
-					BigInteger[] keys = new BigInteger[n];
-					ECPoint[] pubKeys = new ECPoint[n];
+					BigInteger[][] keys = new BigInteger[n][1];
+					ECPointWrapper[] pubKeys = new ECPointWrapper[n];
 					CryptoData[] environments = new CryptoData[n];
 					for(int i = 0; i < keys.length; i++) {
-						keys[i] = ZKToolkit.random(curves[i].getOrder(), rand);
-						pubKeys[i] = gens[i][0].multiply(keys[i]);
+						keys[i][0] = ZKToolkit.random(curves[i].getOrder(), rand);
+						pubKeys[i] = gens[i][0].multiply(keys[i][0]);
 						environments[i] = new CryptoDataArray(new CryptoData[] {new ECCurveData(curves[i], gens[i][0]), new ECPointData(gens[i][1])});
 					}
 
@@ -100,7 +103,7 @@ public class PolyLockTester {
 					ZKPProtocol prover = lock.getProver(order);
 
 
-					CryptoData proverData = lock.buildProverData(environments, rand);
+					CryptoData proverData = lock.buildProverData(environments, order, rand);
 					CryptoData publicData = lock.buildPublicInputs(environments);
 					CryptoData env = lock.buildEnvironment(environments);
 
@@ -141,7 +144,7 @@ public class PolyLockTester {
 					data[k][2] = (endTime-startTime);
 
 					startTime = System.nanoTime();
-					BigInteger[] result = lock.release(1,  keys[1], environments);
+					BigInteger[] result = lock.release(1,  keys[1][0], environments);
 
 
 					endTime = System.nanoTime();

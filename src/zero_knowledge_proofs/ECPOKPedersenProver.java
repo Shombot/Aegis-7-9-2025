@@ -5,6 +5,8 @@ import java.math.BigInteger;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.math.ec.ECPoint;
 
+import curve_wrapper.ECCurveWrapper;
+import curve_wrapper.ECPointWrapper;
 import zero_knowledge_proofs.CryptoData.BigIntData;
 import zero_knowledge_proofs.CryptoData.CryptoData;
 import zero_knowledge_proofs.CryptoData.CryptoDataArray;
@@ -19,9 +21,9 @@ public class ECPOKPedersenProver extends ZKPProtocol{
 	public CryptoData initialComm(CryptoData input, CryptoData environment)
 			throws MultipleTrueProofException, NoTrueProofException, ArraySizesDoNotMatchException {
 		CryptoData[] ue = environment.getCryptoDataArray();
-		ECCurve c = ue[0].getECCurveData();
-		ECPoint g = ue[0].getECPointData(c);
-		ECPoint h = ue[1].getECPointData(c);
+		ECCurveWrapper c = ue[0].getECCurveData();
+		ECPointWrapper g = ue[0].getECPointData(c);
+		ECPointWrapper h = ue[1].getECPointData(c);
 		
 		CryptoData[] ui = input.getCryptoDataArray();
 		BigInteger r_1 = ui[1].getBigInt();
@@ -38,12 +40,12 @@ public class ECPOKPedersenProver extends ZKPProtocol{
 			throws MultipleTrueProofException, ArraySizesDoNotMatchException {
 
 		CryptoData[] ue = environment.getCryptoDataArray();
-		ECCurve c = ue[0].getECCurveData();
-		ECPoint g = ue[0].getECPointData(c);
-		ECPoint h = ue[1].getECPointData(c);
+		ECCurveWrapper c = ue[0].getECCurveData();
+		ECPointWrapper g = ue[0].getECPointData(c);
+		ECPointWrapper h = ue[1].getECPointData(c);
 		
 		CryptoData[] ui = input.getCryptoDataArray();
-		ECPoint y = ui[0].getECPointData(c);
+		ECPointWrapper y = ui[0].getECPointData(c);
 		BigInteger z_1 = ui[1].getBigInt();
 		BigInteger z_2 = ui[2].getBigInt();
 		
@@ -55,7 +57,7 @@ public class ECPOKPedersenProver extends ZKPProtocol{
 			throws NoTrueProofException, MultipleTrueProofException {
 		
 		CryptoData[] ue = environment.getCryptoDataArray();
-		ECCurve c = ue[0].getECCurveData();
+		ECCurveWrapper c = ue[0].getECCurveData();
 		
 		CryptoData[] ui = input.getCryptoDataArray();
 		BigInteger r_1 = ui[1].getBigInt();
@@ -81,15 +83,15 @@ public class ECPOKPedersenProver extends ZKPProtocol{
 		// TODO Auto-generated method stub
 
 		CryptoData[] ue = environment.getCryptoDataArray();
-		ECCurve c = ue[0].getECCurveData();
-		ECPoint g = ue[0].getECPointData(c);
-		ECPoint h = ue[1].getECPointData(c);
+		ECCurveWrapper c = ue[0].getECCurveData();
+		ECPointWrapper g = ue[0].getECPointData(c);
+		ECPointWrapper h = ue[1].getECPointData(c);
 		
 		CryptoData[] ui = input.getCryptoDataArray();
-		ECPoint y = ui[0].getECPointData(c);
+		ECPointWrapper y = ui[0].getECPointData(c);
 		
 		CryptoData[] ua = a.getCryptoDataArray();
-		ECPoint init = ua[0].getECPointData(c);
+		ECPointWrapper init = ua[0].getECPointData(c);
 
 		CryptoData[] uz = z.getCryptoDataArray();
 		BigInteger z_1 = uz[0].getBigInt();
@@ -102,9 +104,9 @@ public class ECPOKPedersenProver extends ZKPProtocol{
 	public CryptoData initialComm(CryptoData publicInput, CryptoData secrets, CryptoData environment)
 			throws MultipleTrueProofException, NoTrueProofException, ArraySizesDoNotMatchException {
 		CryptoData[] ue = environment.getCryptoDataArray();
-		ECCurve c = ue[0].getECCurveData();
-		ECPoint g = ue[0].getECPointData(c);
-		ECPoint h = ue[1].getECPointData(c);
+		ECCurveWrapper c = ue[0].getECCurveData();
+		ECPointWrapper g = ue[0].getECPointData(c);
+		ECPointWrapper h = ue[1].getECPointData(c);
 		
 		CryptoData[] ui = secrets.getCryptoDataArray();
 		BigInteger r_1 = ui[0].getBigInt();
@@ -120,13 +122,13 @@ public class ECPOKPedersenProver extends ZKPProtocol{
 			CryptoData environment)
 			throws MultipleTrueProofException, ArraySizesDoNotMatchException, NoTrueProofException {
 		CryptoData[] ue = environment.getCryptoDataArray();
-		ECCurve c = ue[0].getECCurveData();
-		ECPoint g = ue[0].getECPointData(c);
-		ECPoint h = ue[1].getECPointData(c);
+		ECCurveWrapper c = ue[0].getECCurveData();
+		ECPointWrapper g = ue[0].getECPointData(c);
+		ECPointWrapper h = ue[1].getECPointData(c);
 		
 		CryptoData[] s = secrets.getCryptoDataArray();
 		CryptoData[] ui = publicInput.getCryptoDataArray();
-		ECPoint y = ui[0].getECPointData(c);
+		ECPointWrapper y = ui[0].getECPointData(c);
 		BigInteger z_1 = s[0].getBigInt();
 		BigInteger z_2 = s[1].getBigInt();
 		
@@ -139,7 +141,7 @@ public class ECPOKPedersenProver extends ZKPProtocol{
 			CryptoData environment) throws NoTrueProofException, MultipleTrueProofException {
 		
 		CryptoData[] ue = environment.getCryptoDataArray();
-		ECCurve c = ue[0].getECCurveData();
+		ECCurveWrapper c = ue[0].getECCurveData();
 		
 		CryptoData[] s = secrets.getCryptoDataArray();
 		

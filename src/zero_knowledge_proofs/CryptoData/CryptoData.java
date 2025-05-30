@@ -6,9 +6,8 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
-import org.bouncycastle.math.ec.ECCurve;
-import org.bouncycastle.math.ec.ECPoint;
-
+import curve_wrapper.ECCurveWrapper;
+import curve_wrapper.ECPointWrapper;
 import zero_knowledge_proofs.InvalidStringFormatException;
 
 
@@ -89,10 +88,10 @@ public abstract class CryptoData implements Serializable {
 	{
 		throw new ArrayIndexOutOfBoundsException("Not an array.");
 	}
-	public ECCurve getECCurveData() {
+	public ECCurveWrapper getECCurveData() {
 		return null;
 	}
-	public ECPoint getECPointData(ECCurve c) {
+	public ECPointWrapper getECPointData(ECCurveWrapper c) {
 		return null;
 	}
 

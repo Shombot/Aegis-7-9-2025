@@ -7,6 +7,8 @@ import java.util.InputMismatchException;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.math.ec.ECPoint;
 
+import curve_wrapper.ECCurveWrapper;
+import curve_wrapper.ECPointWrapper;
 import zero_knowledge_proofs.ECOwnedPedersenCommitment;
 import zero_knowledge_proofs.ECPedersenCommitment;
 import zero_knowledge_proofs.ECSchnorrProver;
@@ -38,10 +40,10 @@ public class PolyLock implements PolyLockInterface{
 	private ECPedersenCommitment[] coefficientCommitments;
 	private transient ECOwnedPedersenCommitment[] ownedValueCommitments;
 	private ECPedersenCommitment[] valueCommitments;
-	private transient ECCurve[] curves;
+	private transient ECCurveWrapper[] curves;
 	private BigInteger[] negValues;
 	private transient ZKPProtocol prover;
-	private transient ECPoint[][] generators;
+	private transient ECPointWrapper[][] generators;
 	private boolean[] needsConversion;
 	
 	private ECPedersenCommitment[][][] bitwiseCommitments;
@@ -52,12 +54,12 @@ public class PolyLock implements PolyLockInterface{
 
 	private int maxPos = 0;
 	
-	public PolyLock(CryptoData[] publicForm, BigInteger[] secrets, CryptoData[] environments, SecureRandom rand) {
+	public PolyLock(CryptoData[] publicForm, BigInteger[][] secrets, CryptoData[] environments, SecureRandom rand) {
 		publicForms = publicForm.clone();
 		
 		orders = new BigInteger[environments.length];
-		curves = new ECCurve[environments.length];
-		ECPoint[][] generators = new ECPoint[environments.length][2];
+		curves = new ECCurveWrapper[environments.length];
+		ECPointWrapper[][] generators = new ECPointWrapper[environments.length][2];
 		needsConversion = new boolean[environments.length];
 		
 		boolean sameOrder = false;
@@ -65,7 +67,7 @@ public class PolyLock implements PolyLockInterface{
 				
 		for(int i = 0; i < environments.length; i++) {
 			CryptoData[] e = environments[i].getCryptoDataArray();
-			ECCurve c = e[0].getECCurveData();
+			ECCurveWrapper c = e[0].getECCurveData();
 			if(c != null)
 			{
 				curves[i] = c;
@@ -89,7 +91,7 @@ public class PolyLock implements PolyLockInterface{
 		}
 		if(sameOrder) {
 			//If we are here, there are multiple curves of equal order.  In this event, we want the most common curve to be the curve we execute.
-			ArrayList<ECCurve> list = new ArrayList<ECCurve>();
+			ArrayList<ECCurveWrapper> list = new ArrayList<ECCurveWrapper>();
 			int[] numCurves = new int[orders.length];
 			for(int i = 0; i < orders.length; i++) {
 				if(orders[i].equals(orders[maxPos])) {
@@ -106,7 +108,7 @@ public class PolyLock implements PolyLockInterface{
 				if(numCurves[max] < numCurves[i]) max = i;
 			}
 			
-			ECCurve mostCommonCurve = list.get(max);
+			ECCurveWrapper mostCommonCurve = list.get(max);
 			for(int i = 0; i < curves.length; i++) {
 				if(mostCommonCurve.equals(curves[i])) {
 					maxPos = i;
@@ -117,7 +119,7 @@ public class PolyLock implements PolyLockInterface{
 		ArrayList<BigInteger[]> points = new ArrayList<BigInteger[]>(environments.length);
 		for(int i = 0; i < environments.length; i++) {
 			needsConversion[i] = !curves[i].equals(curves[maxPos]);
-			points.add(new BigInteger[]{BigInteger.valueOf(i), secrets[i]});
+			points.add(new BigInteger[]{BigInteger.valueOf(i), secrets[i][0]});
 		}
 		
 		poly = new ModPolynomial(points, orders[maxPos]);
@@ -126,7 +128,7 @@ public class PolyLock implements PolyLockInterface{
 		
 		ownedCoefficientCommitments = new ECOwnedPedersenCommitment[coefficients.length];
 		coefficientCommitments = new ECPedersenCommitment[coefficients.length];
-		
+		//Creating coefficient commitments
 		for(int i = 0; i < coefficients.length; i++) {
 			BigInteger key = ZKToolkit.random(orders[maxPos], rand);
 			
@@ -145,12 +147,17 @@ public class PolyLock implements PolyLockInterface{
 			BigInteger key;
 			if(needsConversion[i]) key = ZKToolkit.random(orders[maxPos], rand);
 			else key = BigInteger.ZERO;
-			
-			valueCommitments[i] = new ECPedersenCommitment(secrets[i], key, environments[maxPos]);
+			if(secrets[i].length == 1) {
+				valueCommitments[i] = new ECPedersenCommitment(secrets[i][0], key, environments[maxPos]);
+			}
+			else {
+				valueCommitments[i] = new ECPedersenCommitment(publicForm[i].getECPointData(environments[i].getCryptoDataArray()[0].getECCurveData()));
+				key = secrets[i][1];
+			}
 			ownedValueCommitments[i] = new ECOwnedPedersenCommitment();
 			ownedValueCommitments[i].comm = valueCommitments[i];
 			ownedValueCommitments[i].key = key;
-			ownedValueCommitments[i].message = secrets[i];
+			ownedValueCommitments[i].message = secrets[i][0];
 		}
 		
 		negValues = new BigInteger[secrets.length - 1];
@@ -170,7 +177,7 @@ public class PolyLock implements PolyLockInterface{
 
 				for(int j = 0; j < bitwiseCommitments[i].length; j++) {
 					BigInteger bit;
-					if(secrets[i].testBit(j))
+					if(secrets[i][0].testBit(j))
 					{
 						bit = BigInteger.ONE;
 					}
@@ -232,7 +239,7 @@ public class PolyLock implements PolyLockInterface{
 	public BigInteger[] release(int pos, BigInteger secret, CryptoData[] environments) {
 		ArrayList<BigInteger[]> list = new ArrayList<BigInteger[]>();
 		
-		ECPoint g = environments[pos].getCryptoDataArray()[0].getECPointData(environments[pos].getCryptoDataArray()[0].getECCurveData());
+		ECPointWrapper g = environments[pos].getCryptoDataArray()[0].getECPointData(environments[pos].getCryptoDataArray()[0].getECCurveData());
 		
 		if(!publicForms[pos].getECPointData(environments[pos].getCryptoDataArray()[0].getECCurveData()).equals(g.multiply(secret)))
 		{
@@ -298,19 +305,19 @@ public class PolyLock implements PolyLockInterface{
 		CryptoData[] outer = new CryptoData[2];
 		CryptoData[] middle = new CryptoData[valueCommitments.length];
 		//Positive values and group conversion
-		ECPoint maxInf = environments[maxPos].getCryptoDataArray()[0].getECCurveData().getInfinity();
-		ECPoint g = environments[maxPos].getCryptoDataArray()[0].getECPointData(environments[maxPos].getCryptoDataArray()[0].getECCurveData());
+		ECPointWrapper maxInf = environments[maxPos].getCryptoDataArray()[0].getECCurveData().getInfinity();
+		ECPointWrapper g = environments[maxPos].getCryptoDataArray()[0].getECPointData(environments[maxPos].getCryptoDataArray()[0].getECCurveData());
 		for(int i = 0; i < middle.length; i++) {
 			
-			ECPoint commitmentFromCoefficients = maxInf;
+			ECPointWrapper commitmentFromCoefficients = maxInf;
 			for(int j = 0; j < coefficientCommitments.length; j++) {
 				commitmentFromCoefficients = commitmentFromCoefficients.add(coefficientCommitments[j].getCommitment(environments[maxPos]).multiply(BigInteger.valueOf(i).modPow(BigInteger.valueOf(j), orders[maxPos])));
 			}
 			if(needsConversion[i]) {
 				CryptoData[] innerMiddle = new CryptoData[4];
-				innerMiddle[0] = new CryptoDataArray(new ECPoint[] {commitmentFromCoefficients.subtract(valueCommitments[i].getCommitment(environments[maxPos]))});
-				innerMiddle[1] = new CryptoDataArray(new ECPoint[] {bitwiseCommitmentsCombined[i][0].getCommitment(environments[maxPos]).subtract(valueCommitments[i].getCommitment(environments[maxPos]))});
-				innerMiddle[2] = new CryptoDataArray(new ECPoint[] {bitwiseCommitmentsCombined[i][1].getCommitment(environments[i]).subtract(publicForms[i].getECPointData(environments[i].getCryptoDataArray()[0].getECCurveData()))});
+				innerMiddle[0] = new CryptoDataArray(new ECPointWrapper[] {commitmentFromCoefficients.subtract(valueCommitments[i].getCommitment(environments[maxPos]))});
+				innerMiddle[1] = new CryptoDataArray(new ECPointWrapper[] {bitwiseCommitmentsCombined[i][0].getCommitment(environments[maxPos]).subtract(valueCommitments[i].getCommitment(environments[maxPos]))});
+				innerMiddle[2] = new CryptoDataArray(new ECPointWrapper[] {bitwiseCommitmentsCombined[i][1].getCommitment(environments[i]).subtract(publicForms[i].getECPointData(environments[i].getCryptoDataArray()[0].getECCurveData()))});
 				
 				CryptoData[] baseConversion = new CryptoData[orders[i].bitLength()];
 				for(int j = 0; j < baseConversion.length; j++) {
@@ -319,14 +326,14 @@ public class PolyLock implements PolyLockInterface{
 					
 						
 					CryptoData[] temp = new CryptoData[2];
-					temp[0] = new CryptoDataArray(new ECPoint[] {bitwiseCommitments[i][j][0].getCommitment(environments[maxPos])});
-					temp[1] = new CryptoDataArray(new ECPoint[] {bitwiseCommitments[i][j][1].getCommitment(environments[i])});
+					temp[0] = new CryptoDataArray(new ECPointWrapper[] {bitwiseCommitments[i][j][0].getCommitment(environments[maxPos])});
+					temp[1] = new CryptoDataArray(new ECPointWrapper[] {bitwiseCommitments[i][j][1].getCommitment(environments[i])});
 					innerMid[0] = new CryptoDataArray(temp);
 					
 					temp = new CryptoData[2];
 					
-					temp[0] = new CryptoDataArray(new ECPoint[] {bitwiseCommitments[i][j][0].getCommitment(environments[maxPos]).subtract(g)});
-					temp[1] = new CryptoDataArray(new ECPoint[] {bitwiseCommitments[i][j][1].getCommitment(environments[i]).subtract(environments[i].getCryptoDataArray()[0].getECPointData(environments[i].getCryptoDataArray()[0].getECCurveData()))});
+					temp[0] = new CryptoDataArray(new ECPointWrapper[] {bitwiseCommitments[i][j][0].getCommitment(environments[maxPos]).subtract(g)});
+					temp[1] = new CryptoDataArray(new ECPointWrapper[] {bitwiseCommitments[i][j][1].getCommitment(environments[i]).subtract(environments[i].getCryptoDataArray()[0].getECPointData(environments[i].getCryptoDataArray()[0].getECCurveData()))});
 					
 					innerMid[1] = new CryptoDataArray(temp);
 					baseConversion[j] = new CryptoDataArray(innerMid);
@@ -336,7 +343,7 @@ public class PolyLock implements PolyLockInterface{
 			}
 			else {
 				//calculate the value from the coefficients
-				middle[i] = new CryptoDataArray(new ECPoint[] {commitmentFromCoefficients.subtract(valueCommitments[i].getCommitment(environments[maxPos]))});
+				middle[i] = new CryptoDataArray(new ECPointWrapper[] {commitmentFromCoefficients.subtract(valueCommitments[i].getCommitment(environments[maxPos]))});
 			}
 		}	
 
@@ -345,11 +352,11 @@ public class PolyLock implements PolyLockInterface{
 		middle = new CryptoData[negValues.length];
 		for(int i = 0; i < negValues.length; i++)
 		{
-			ECPoint commitmentFromCoefficients = maxInf;
+			ECPointWrapper commitmentFromCoefficients = maxInf;
 			for(int j = 0; j < coefficientCommitments.length; j++) {
 				commitmentFromCoefficients = commitmentFromCoefficients.add(coefficientCommitments[j].getCommitment(environments[maxPos]).multiply(BigInteger.valueOf(-1-i).modPow(BigInteger.valueOf(j), orders[maxPos])));
 			}
-			middle[i] = new CryptoDataArray(new ECPoint[] {commitmentFromCoefficients.subtract(g.multiply(negValues[i]))});
+			middle[i] = new CryptoDataArray(new ECPointWrapper[] {commitmentFromCoefficients.subtract(g.multiply(negValues[i]))});
 		}
 		outer[1] = new CryptoDataArray(middle);
 		return new CryptoDataArray(outer);
@@ -357,7 +364,7 @@ public class PolyLock implements PolyLockInterface{
 
 	
 	@Override
-	public CryptoData buildProverData(CryptoData[] environments, SecureRandom rand) {
+	public CryptoData buildProverData(CryptoData[] environments, BigInteger order, SecureRandom rand) {
 		if(ownedCoefficientCommitments == null) throw new InputMismatchException("This is lock is not owned by this party.");
 		
 		calculateCombinedValues(environments);
@@ -388,7 +395,7 @@ public class PolyLock implements PolyLockInterface{
 					
 					if(!ownedValueCommitments[i].message.testBit(j)){
 						innerChallenges[0] = new BigIntData(null);
-						innerChallenges[1] = new BigIntData(new BigInteger(255, rand));
+						innerChallenges[1] = new BigIntData(ZKToolkit.random(order, rand));
 						
 						CryptoData[] temp = new CryptoData[2];
 						temp[0] = new CryptoDataArray(new BigInteger[] {ZKToolkit.random(orders[maxPos], rand), bitwiseCommitmentKeys[i][j][0]});
@@ -403,7 +410,7 @@ public class PolyLock implements PolyLockInterface{
 						innerMid[1] = new CryptoDataArray(temp);
 					}
 					else{
-						innerChallenges[0] = new BigIntData(new BigInteger(255, rand));
+						innerChallenges[0] = new BigIntData(ZKToolkit.random(order, rand));
 						innerChallenges[1] = new BigIntData(null);
 						
 						CryptoData[] temp = new CryptoData[2];
@@ -428,7 +435,7 @@ public class PolyLock implements PolyLockInterface{
 			}
 			else{
 				//calculate the value from the coefficients
-				middle[i] = new CryptoDataArray(new BigInteger[] {ZKToolkit.random(orders[maxPos], rand), key});
+				middle[i] = new CryptoDataArray(new BigInteger[] {ZKToolkit.random(orders[maxPos], rand), key.subtract(ownedValueCommitments[i].key).mod(orders[maxPos])});
 			}
 		}
 		outer[0] = new CryptoDataArray(middle);
@@ -450,9 +457,9 @@ public class PolyLock implements PolyLockInterface{
 		CryptoData[] revEnvironments = new CryptoData[environments.length];
 		for(int i = 0; i < environments.length; i++) {
 			CryptoData[] temp = environments[i].getCryptoDataArray();
-			ECCurve c = temp[0].getECCurveData();
-			ECPoint g = temp[0].getECPointData(c);
-			ECPoint h = temp[1].getECPointData(c);
+			ECCurveWrapper c = temp[0].getECCurveData();
+			ECPointWrapper g = temp[0].getECPointData(c);
+			ECPointWrapper h = temp[1].getECPointData(c);
 			revEnvironments[i] = new CryptoDataArray(new CryptoData[] {new ECCurveData(c, h), new ECPointData(g)});
 		}
 		CryptoData[] outer = new CryptoData[2];
@@ -495,7 +502,7 @@ public class PolyLock implements PolyLockInterface{
 	@Override
 	public boolean verifyHiddenValues(CryptoData[] myPublicFormsCopy, CryptoData[] environments) {
 		for(int i = 0; i < publicForms.length; i++) {
-			ECCurve c = environments[i].getCryptoDataArray()[0].getECCurveData();
+			ECCurveWrapper c = environments[i].getCryptoDataArray()[0].getECCurveData();
 			try{
 				if(!orders[i].equals(c.getOrder()) || !(publicForms[i].getECPointData(c).equals(myPublicFormsCopy[i].getECPointData(c)))){
 					return false;

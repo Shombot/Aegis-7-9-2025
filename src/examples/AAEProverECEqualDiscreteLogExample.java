@@ -26,6 +26,10 @@ import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.math.ec.ECPoint;
 
+import curve_wrapper.BouncyCastleCurve;
+import curve_wrapper.BouncyCastlePoint;
+import curve_wrapper.ECCurveWrapper;
+import curve_wrapper.ECPointWrapper;
 import zero_knowledge_proofs.ArraySizesDoNotMatchException;
 import zero_knowledge_proofs.DLSchnorrProver;
 import zero_knowledge_proofs.ECEqualDiscreteLogsProver;
@@ -102,17 +106,19 @@ public class AAEProverECEqualDiscreteLogExample {
 		
 		SecureRandom rand = new SecureRandom();
 
-		ECPoint g = ECNamedCurveTable.getParameterSpec("secp256k1").getG();
-		ECCurve c = g.getCurve();	
-		BigInteger order = c.getOrder();
-		ECPoint h = g.multiply(ZKToolkit.random(order, rand));
+		ECPoint gUnwrapped = ECNamedCurveTable.getParameterSpec("secp256k1").getG();
+		ECCurve cUnwrapped = gUnwrapped.getCurve();	
+		BigInteger order = cUnwrapped.getOrder();
+		ECPointWrapper g = new BouncyCastlePoint(gUnwrapped);
+		ECCurveWrapper c = new BouncyCastleCurve(cUnwrapped);
+		ECPointWrapper h = g.multiply(ZKToolkit.random(order, rand));
 		
 		out.writeObject(h.getEncoded(true));
 		out.flush();
 		
 		BigInteger x = ZKToolkit.random(order, rand);
-		ECPoint gx = g.multiply(x);
-		ECPoint hx = h.multiply(x);
+		ECPointWrapper gx = g.multiply(x);
+		ECPointWrapper hx = h.multiply(x);
 		
 		out.writeObject(gx.getEncoded(true));
 		out.writeObject(hx.getEncoded(true));

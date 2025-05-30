@@ -5,6 +5,8 @@ import java.math.BigInteger;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.math.ec.ECPoint;
 
+import curve_wrapper.ECCurveWrapper;
+import curve_wrapper.ECPointWrapper;
 import zero_knowledge_proofs.CryptoData.CryptoData;
 import zero_knowledge_proofs.CryptoData.CryptoDataArray;
 
@@ -16,9 +18,9 @@ public class ECProvisionsProver extends ZKPProtocol {
 			throws MultipleTrueProofException, NoTrueProofException, ArraySizesDoNotMatchException {
 		CryptoData[] inputs = input.getCryptoDataArray();
 		CryptoData[] env = environment.getCryptoDataArray();
-		ECCurve c = env[0].getECCurveData();
-		ECPoint b = inputs[0].getECPointData(c);
-		ECPoint y = inputs[1].getECPointData(c);
+		ECCurveWrapper c = env[0].getECCurveData();
+		ECPointWrapper b = inputs[0].getECPointData(c);
+		ECPointWrapper y = inputs[1].getECPointData(c);
 		BigInteger u_1 = inputs[6].getBigInt();
 		BigInteger u_2 = inputs[7].getBigInt();
 		BigInteger u_3 = inputs[8].getBigInt();
@@ -26,9 +28,9 @@ public class ECProvisionsProver extends ZKPProtocol {
 		BigInteger u_5 = inputs[10].getBigInt();
 		BigInteger u_6 = inputs[11].getBigInt();
 		BigInteger c_f = inputs[12].getBigInt();
-		ECPoint g = env[0].getECPointData(c);
-		ECPoint h = env[1].getECPointData(c);
-		ECPoint[] a = new ECPoint[5];
+		ECPointWrapper g = env[0].getECPointData(c);
+		ECPointWrapper h = env[1].getECPointData(c);
+		ECPointWrapper[] a = new ECPointWrapper[5];
 		//a format: [a_1, a_2, a_3, binA_0, binA_1]
 		
 		boolean s = inputs[5].getBigInt().equals(BigInteger.ONE);
@@ -65,7 +67,7 @@ public class ECProvisionsProver extends ZKPProtocol {
 		CryptoData[] inputs = input.getCryptoDataArray();
 		CryptoData[] env = environment.getCryptoDataArray();
 		
-		ECCurve c = env[0].getECCurveData();
+		ECCurveWrapper c = env[0].getECCurveData();
 		BigInteger xhat = inputs[2].getBigInt();
 		BigInteger v = inputs[3].getBigInt();
 		BigInteger t = inputs[4].getBigInt();
@@ -115,15 +117,15 @@ public class ECProvisionsProver extends ZKPProtocol {
 		CryptoData[] resp = z.getCryptoDataArray();
 		CryptoData[] init = a.getCryptoDataArray();
 		
-		ECCurve c = env[0].getECCurveData();
+		ECCurveWrapper c = env[0].getECCurveData();
 				
-		ECPoint b = inputs[0].getECPointData(c);
-		ECPoint y = inputs[1].getECPointData(c);
-		ECPoint pComm = inputs[2].getECPointData(c);
-		ECPoint lComm = inputs[3].getECPointData(c);
+		ECPointWrapper b = inputs[0].getECPointData(c);
+		ECPointWrapper y = inputs[1].getECPointData(c);
+		ECPointWrapper pComm = inputs[2].getECPointData(c);
+		ECPointWrapper lComm = inputs[3].getECPointData(c);
 		
-		ECPoint g = env[0].getECPointData(c);
-		ECPoint h = env[1].getECPointData(c);
+		ECPointWrapper g = env[0].getECPointData(c);
+		ECPointWrapper h = env[1].getECPointData(c);
 		
 		BigInteger r_s = resp[0].getBigInt();
 		BigInteger r_v = resp[1].getBigInt();
@@ -133,31 +135,31 @@ public class ECProvisionsProver extends ZKPProtocol {
 		BigInteger r_0 = resp[5].getBigInt();
 		BigInteger r_1 = resp[6].getBigInt();
 		
-		ECPoint a_1 = init[0].getECPointData(c);
-		ECPoint a_2 = init[1].getECPointData(c);
-		ECPoint a_3 = init[2].getECPointData(c);
-		ECPoint binA_0 = init[3].getECPointData(c);
-		ECPoint binA_1 = init[4].getECPointData(c);
+		ECPointWrapper a_1 = init[0].getECPointData(c);
+		ECPointWrapper a_2 = init[1].getECPointData(c);
+		ECPointWrapper a_3 = init[2].getECPointData(c);
+		ECPointWrapper binA_0 = init[3].getECPointData(c);
+		ECPointWrapper binA_1 = init[4].getECPointData(c);
 		
 		//resp:  [r_s, r_v, r_t, r_x]
-		ECPoint s1L = (b.multiply(r_s).add(h.multiply(r_v)));
-		ECPoint s1R = (pComm.multiply(challenge).add(a_1));
+		ECPointWrapper s1L = (b.multiply(r_s).add(h.multiply(r_v)));
+		ECPointWrapper s1R = (pComm.multiply(challenge).add(a_1));
 		
-		ECPoint s2L = (y.multiply(r_s).add(h.multiply(r_t)));
-		ECPoint s2R = (lComm.multiply(challenge).add(a_2));
+		ECPointWrapper s2L = (y.multiply(r_s).add(h.multiply(r_t)));
+		ECPointWrapper s2R = (lComm.multiply(challenge).add(a_2));
 		
-		ECPoint s3L = (g.multiply(r_x).add(h.multiply(r_t)));
-		ECPoint s3R = (lComm.multiply(challenge).add(a_3));
+		ECPointWrapper s3L = (g.multiply(r_x).add(h.multiply(r_t)));
+		ECPointWrapper s3R = (lComm.multiply(challenge).add(a_3));
 
 		//a = [a_1, a_2, a_3, binA_0, binA_1]
 		//r = [r_s, r_v, r_t, r_x, c_1, r_0, r_1]
 		
 		//y^s * h^t
-		ECPoint s4L = h.multiply(r_0);
-		ECPoint s4R = (binA_0.add(lComm.multiply(challenge.subtract(c_1))));
+		ECPointWrapper s4L = h.multiply(r_0);
+		ECPointWrapper s4R = (binA_0.add(lComm.multiply(challenge.subtract(c_1))));
 				
-		ECPoint s5L = h.multiply(r_1);
-		ECPoint s5R = (binA_1.add((lComm.add(y.negate())).multiply(c_1)));
+		ECPointWrapper s5L = h.multiply(r_1);
+		ECPointWrapper s5R = (binA_1.add((lComm.add(y.negate())).multiply(c_1)));
 		boolean toReturn = (s1L.equals(s1R) && s2L.equals(s2R) && s3L.equals(s3R) && s4L.equals(s4R) && s5L.equals(s5R));
 		
 		return toReturn;
@@ -169,9 +171,9 @@ public class ECProvisionsProver extends ZKPProtocol {
 		CryptoData[] inputs = publicInput.getCryptoDataArray();
 		CryptoData[] sU = secrets.getCryptoDataArray();
 		CryptoData[] env = environment.getCryptoDataArray();
-		ECCurve c = env[0].getECCurveData();
-		ECPoint b = inputs[0].getECPointData(c);
-		ECPoint y = inputs[1].getECPointData(c);
+		ECCurveWrapper c = env[0].getECCurveData();
+		ECPointWrapper b = inputs[0].getECPointData(c);
+		ECPointWrapper y = inputs[1].getECPointData(c);
 		BigInteger u_1 = sU[4].getBigInt();
 		BigInteger u_2 = sU[5].getBigInt();
 		BigInteger u_3 = sU[6].getBigInt();
@@ -179,9 +181,9 @@ public class ECProvisionsProver extends ZKPProtocol {
 		BigInteger u_5 = sU[8].getBigInt();
 		BigInteger u_6 = sU[9].getBigInt();
 		BigInteger c_f = sU[10].getBigInt();
-		ECPoint g = env[0].getECPointData(c);
-		ECPoint h = env[1].getECPointData(c);
-		ECPoint[] a = new ECPoint[5];
+		ECPointWrapper g = env[0].getECPointData(c);
+		ECPointWrapper h = env[1].getECPointData(c);
+		ECPointWrapper[] a = new ECPointWrapper[5];
 		//a format: [a_1, a_2, a_3, binA_0, binA_1]
 		
 		boolean s = sU[3].getBigInt().equals(BigInteger.ONE);
@@ -213,7 +215,7 @@ public class ECProvisionsProver extends ZKPProtocol {
 		CryptoData[] sU = secrets.getCryptoDataArray();
 		CryptoData[] env = environment.getCryptoDataArray();
 		
-		ECCurve c = env[0].getECCurveData();
+		ECCurveWrapper c = env[0].getECCurveData();
 		BigInteger xhat = sU[0].getBigInt();
 		BigInteger v = sU[1].getBigInt();
 		BigInteger t = sU[2].getBigInt();

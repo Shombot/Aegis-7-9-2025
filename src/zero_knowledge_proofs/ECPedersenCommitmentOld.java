@@ -7,6 +7,8 @@ import java.util.Base64;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.math.ec.ECPoint;
 
+import curve_wrapper.ECCurveWrapper;
+import curve_wrapper.ECPointWrapper;
 import zero_knowledge_proofs.CryptoData.CryptoData;
 
 public class ECPedersenCommitmentOld implements Serializable {
@@ -22,10 +24,10 @@ public class ECPedersenCommitmentOld implements Serializable {
 	public ECPedersenCommitmentOld(BigInteger message, BigInteger keys, CryptoData environment)
 	{
 		//g^m h^r 
-		ECCurve c = environment.getCryptoDataArray()[0].getECCurveData();
-		ECPoint g = environment.getCryptoDataArray()[0].getECPointData(c);
-		ECPoint h = environment.getCryptoDataArray()[1].getECPointData(c);
-		ECPoint comm = g.multiply(message).add(h.multiply(keys));
+		ECCurveWrapper c = environment.getCryptoDataArray()[0].getECCurveData();
+		ECPointWrapper g = environment.getCryptoDataArray()[0].getECPointData(c);
+		ECPointWrapper h = environment.getCryptoDataArray()[1].getECPointData(c);
+		ECPointWrapper comm = g.multiply(message).add(h.multiply(keys));
 		comm = comm.normalize();
 		if(comm.getXCoord() == null)
 		{
@@ -33,11 +35,11 @@ public class ECPedersenCommitmentOld implements Serializable {
 		}
 		else
 		{
-			x = comm.getAffineXCoord().toBigInteger();
-			y = comm.getAffineYCoord().toBigInteger();
+			x = comm.getAffineXCoord();
+			y = comm.getAffineYCoord();
 		}
 	}
-	private ECPedersenCommitmentOld(ECPoint comm)
+	private ECPedersenCommitmentOld(ECPointWrapper comm)
 	{
 		comm = comm.normalize();
 		if(comm.getXCoord() == null)
@@ -46,22 +48,22 @@ public class ECPedersenCommitmentOld implements Serializable {
 		}
 		else
 		{
-			x = comm.getAffineXCoord().toBigInteger();
-			y = comm.getAffineYCoord().toBigInteger();
+			x = comm.getAffineXCoord();
+			y = comm.getAffineYCoord();
 		}
 	}
 
-	public ECPoint getCommitment(CryptoData environment) {
-		ECCurve c = environment.getCryptoDataArray()[0].getECCurveData();
+	public ECPointWrapper getCommitment(CryptoData environment) {
+		ECCurveWrapper c = environment.getCryptoDataArray()[0].getECCurveData();
 		if (x == null) return c.getInfinity();
 		return c.createPoint(x, y);
 	}
 
 	public boolean verifyCommitment(BigInteger message, BigInteger keys, CryptoData environment) {
-		ECCurve c = environment.getCryptoDataArray()[0].getECCurveData();
-		ECPoint g = environment.getCryptoDataArray()[0].getECPointData(c);
-		ECPoint h = environment.getCryptoDataArray()[1].getECPointData(c);
-		ECPoint comm = g.multiply(message).add(h.multiply(keys));
+		ECCurveWrapper c = environment.getCryptoDataArray()[0].getECCurveData();
+		ECPointWrapper g = environment.getCryptoDataArray()[0].getECPointData(c);
+		ECPointWrapper h = environment.getCryptoDataArray()[1].getECPointData(c);
+		ECPointWrapper comm = g.multiply(message).add(h.multiply(keys));
 		return getCommitment(environment).equals(comm);
 	}
 

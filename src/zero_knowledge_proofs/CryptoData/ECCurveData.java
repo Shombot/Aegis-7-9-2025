@@ -6,18 +6,19 @@ import java.util.Base64;
 
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.ECPointUtil;
-import org.bouncycastle.math.ec.ECCurve;
-import org.bouncycastle.math.ec.ECPoint;
+
+import curve_wrapper.ECCurveWrapper;
+import curve_wrapper.ECPointWrapper;
 
 public final class ECCurveData extends CryptoData {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 5968736215439976858L;
-	private ECCurve c;
-	private ECPoint g;
+	private ECCurveWrapper c;
+	private ECPointWrapper g;
 	
-	public ECCurveData(ECCurve c, ECPoint g)
+	public ECCurveData(ECCurveWrapper c, ECPointWrapper g)
 	{
 		this.c = c;
 		if(!g.isNormalized())
@@ -30,11 +31,11 @@ public final class ECCurveData extends CryptoData {
 	}
 	
 	@Override
-	public ECCurve getECCurveData() {
+	public ECCurveWrapper getECCurveData() {
 		 return c;
 	}
 	@Override
-	public ECPoint getECPointData(ECCurve c) {
+	public ECPointWrapper getECPointData(ECCurveWrapper c) {
 		if(this.c == c)
 			return g;
 		else return c.importPoint(g);
@@ -48,12 +49,12 @@ public final class ECCurveData extends CryptoData {
 	@Override
 	public String toString()
 	{
-		return String.format("y^2 = x^3 + %sx + %s, G = (%s, %s)", c.getA().toBigInteger().toString(16), c.getB().toBigInteger().toString(16), g.getAffineXCoord().toBigInteger().toString(16), g.getAffineYCoord().toBigInteger().toString(16));
+		return String.format("y^2 = x^3 + %sx + %s, G = (%s, %s)", c.getA().toString(16), c.getB().toString(16), g.getAffineXCoord().toString(16), g.getAffineYCoord().toString(16));
 	}
 	@Override
 	public String toString64()
 	{
-		return String.format("y^2 = x^3 + %sx + %s, G = (%s, %s)", Base64.getEncoder().encodeToString(c.getA().toBigInteger().toByteArray()), Base64.getEncoder().encodeToString(c.getB().toBigInteger().toByteArray()), Base64.getEncoder().encodeToString(g.getAffineXCoord().toBigInteger().toByteArray()), Base64.getEncoder().encodeToString(g.getAffineYCoord().toBigInteger().toByteArray()));
+		return String.format("y^2 = x^3 + %sx + %s, G = (%s, %s)", Base64.getEncoder().encodeToString(c.getA().toByteArray()), Base64.getEncoder().encodeToString(c.getB().toByteArray()), Base64.getEncoder().encodeToString(g.getAffineXCoord().toByteArray()), Base64.getEncoder().encodeToString(g.getAffineYCoord().toByteArray()));
 	}
 	@Override
 	public byte[] getBytes() {

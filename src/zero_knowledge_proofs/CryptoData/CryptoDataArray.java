@@ -6,6 +6,8 @@ import java.util.LinkedList;
 import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.util.Arrays;
 
+import curve_wrapper.ECPointWrapper;
+
 public class CryptoDataArray extends CryptoData {
 
 	/**
@@ -49,7 +51,7 @@ public class CryptoDataArray extends CryptoData {
 		}
 
 	}
-	public CryptoDataArray(ECPoint[] data)
+	public CryptoDataArray(ECPointWrapper[] data)
 	{
 		super();
 		this.data = new CryptoData[data.length];

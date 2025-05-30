@@ -26,6 +26,10 @@ import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.math.ec.ECPoint;
 
+import curve_wrapper.BouncyCastleCurve;
+import curve_wrapper.BouncyCastlePoint;
+import curve_wrapper.ECCurveWrapper;
+import curve_wrapper.ECPointWrapper;
 import zero_knowledge_proofs.ArraySizesDoNotMatchException;
 import zero_knowledge_proofs.DLPedersenCommitment;
 import zero_knowledge_proofs.DLSchnorrProver;
@@ -101,12 +105,14 @@ public class AADVerifierBasicECSchnorrORExample {
 			}
 		}
 
-		ECPoint g = ECNamedCurveTable.getParameterSpec("secp256k1").getG();
-		ECCurve c = g.getCurve();	
-		BigInteger order = c.getOrder();
-		ECPoint h = c.decodePoint((byte[]) in.readObject());
-		ECPoint y1 = c.decodePoint((byte[]) in.readObject());
-		ECPoint y2 = c.decodePoint((byte[]) in.readObject());
+		ECPoint gUnwrapped = ECNamedCurveTable.getParameterSpec("secp256k1").getG();
+		ECCurve cUnwrapped = gUnwrapped.getCurve();	
+		BigInteger order = cUnwrapped.getOrder();
+		ECPointWrapper g = new BouncyCastlePoint(gUnwrapped);
+		ECCurveWrapper c = new BouncyCastleCurve(cUnwrapped);
+		ECPointWrapper h = c.decodePoint((byte[]) in.readObject());
+		ECPointWrapper y1 = c.decodePoint((byte[]) in.readObject());
+		ECPointWrapper y2 = c.decodePoint((byte[]) in.readObject());
 		
 		SecureRandom rand = new SecureRandom();
 

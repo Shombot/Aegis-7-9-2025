@@ -9,6 +9,8 @@ import java.util.InputMismatchException;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.math.ec.ECPoint;
 
+import curve_wrapper.ECCurveWrapper;
+import curve_wrapper.ECPointWrapper;
 import zero_knowledge_proofs.CryptoData.CryptoData;
 import zero_knowledge_proofs.CryptoData.CryptoDataArray;
 
@@ -65,9 +67,9 @@ public class ECSchnorrCombinations extends ZKPProtocol {
 		CryptoData[] secIn = secrets.getCryptoDataArray();
 		CryptoData[] envIn = environment.getCryptoDataArray(); 
 		
-		ECCurve curve = envIn[0].getECCurveData();
+		ECCurveWrapper curve = envIn[0].getECCurveData();
 		
-//		ECPoint[] pub = new ECPoint[pubIn.length];
+//		ECPointWrapper[] pub = new ECPointWrapper[pubIn.length];
 //		for(int i = 0; i < pubIn.length; i++) {
 //			pub[i] = pubIn[i].getECPointData(curve);
 //		}
@@ -81,12 +83,12 @@ public class ECSchnorrCombinations extends ZKPProtocol {
 		sec[i] = secIn[i].getBigInt();
 	}
 
-		ECPoint[] env = new ECPoint[envIn.length];
+		ECPointWrapper[] env = new ECPointWrapper[envIn.length];
 		for(int i = 0; i < envIn.length; i++) {
 			env[i] = envIn[i].getECPointData(curve);
 		}
 		
-		ECPoint[] a = new ECPoint[numPub];
+		ECPointWrapper[] a = new ECPointWrapper[numPub];
 		
 		for(int i = 0; i < numPub; i++) {
 			a[i] = curve.getInfinity();
@@ -114,9 +116,9 @@ public class ECSchnorrCombinations extends ZKPProtocol {
 		CryptoData[] secIn = secrets.getCryptoDataArray();
 		CryptoData[] envIn = environment.getCryptoDataArray(); 
 		
-		ECCurve curve = envIn[0].getECCurveData();
+		ECCurveWrapper curve = envIn[0].getECCurveData();
 		
-		ECPoint[] pub = new ECPoint[pubIn.length];
+		ECPointWrapper[] pub = new ECPointWrapper[pubIn.length];
 		for(int i = 0; i < pubIn.length; i++) {
 			pub[i] = pubIn[i].getECPointData(curve);
 		}
@@ -130,17 +132,17 @@ public class ECSchnorrCombinations extends ZKPProtocol {
 			sec[i] = secIn[i].getBigInt();
 		}
 
-		ECPoint[] env = new ECPoint[envIn.length];
+		ECPointWrapper[] env = new ECPointWrapper[envIn.length];
 		for(int i = 0; i < envIn.length; i++) {
 			env[i] = envIn[i].getECPointData(curve);
 		}
 		
-		ECPoint[] a = new ECPoint[numPub];
+		ECPointWrapper[] a = new ECPointWrapper[numPub];
 		
 		for(int i = 0; i < numPub; i++) {
 			a[i] = pub[i].multiply(challenge.negate());
 			for(int j = 0; j < structure[i].length; j++) {
-				ECPoint arg1 = env[structure[i][j][0]];
+				ECPointWrapper arg1 = env[structure[i][j][0]];
 				BigInteger arg2 = sec[structure[i][j][1]];
 				a[i] = a[i].add(arg1.multiply(arg2));
 			}
@@ -164,9 +166,9 @@ public class ECSchnorrCombinations extends ZKPProtocol {
 		CryptoData[] secIn = secrets.getCryptoDataArray();
 		CryptoData[] envIn = environment.getCryptoDataArray(); 
 		
-		ECCurve curve = envIn[0].getECCurveData();
+		ECCurveWrapper curve = envIn[0].getECCurveData();
 		
-//		ECPoint[] pub = new ECPoint[pubIn.length];
+//		ECPointWrapper[] pub = new ECPointWrapper[pubIn.length];
 //		for(int i = 0; i < pubIn.length; i++) {
 //			pub[i] = pubIn[i].getECPointData(curve);
 //		}
@@ -176,7 +178,7 @@ public class ECSchnorrCombinations extends ZKPProtocol {
 			sec[i] = secIn[i].getBigInt();
 		}
 
-//		ECPoint[] env = new ECPoint[envIn.length];
+//		ECPointWrapper[] env = new ECPointWrapper[envIn.length];
 //		for(int i = 0; i < envIn.length; i++) {
 //			env[i] = envIn[i].getECPointData(curve);
 //		}
@@ -207,14 +209,14 @@ public class ECSchnorrCombinations extends ZKPProtocol {
 		CryptoData[] pubIn = input.getCryptoDataArray();
 		CryptoData[] envIn = environment.getCryptoDataArray(); 
 		
-		ECCurve curve = envIn[0].getECCurveData();
+		ECCurveWrapper curve = envIn[0].getECCurveData();
 		
-		ECPoint[] pub = new ECPoint[pubIn.length];
+		ECPointWrapper[] pub = new ECPointWrapper[pubIn.length];
 		for(int i = 0; i < pubIn.length; i++) {
 			pub[i] = pubIn[i].getECPointData(curve);
 		}
 		
-		ECPoint[] env = new ECPoint[envIn.length];
+		ECPointWrapper[] env = new ECPointWrapper[envIn.length];
 		for(int i = 0; i < envIn.length; i++) {
 			env[i] = envIn[i].getECPointData(curve);
 		}
@@ -224,12 +226,12 @@ public class ECSchnorrCombinations extends ZKPProtocol {
 		for(int i = 0; i < zIn.length; i++) {
 			zIn[i] = zInUnpacked[i].getBigInt();
 		}
-		ECPoint[] aIn = new ECPoint[numPub];
+		ECPointWrapper[] aIn = new ECPointWrapper[numPub];
 		boolean verify = true;
 		for(int i = 0; i < numPub; i++) {
 			aIn[i] = aInUnpacked[i].getECPointData(curve);
-			ECPoint left = curve.getInfinity();
-			ECPoint right = curve.getInfinity();
+			ECPointWrapper left = curve.getInfinity();
+			ECPointWrapper right = curve.getInfinity();
 			for(int j = 0; j < structure[i].length; j++) {
 				left = left.add(env[structure[i][j][0]].multiply(zIn[structure[i][j][1]]));
 			}

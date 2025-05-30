@@ -13,6 +13,8 @@ import java.util.Random;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.math.ec.ECPoint;
 
+import curve_wrapper.ECCurveWrapper;
+import curve_wrapper.ECPointWrapper;
 import zero_knowledge_proofs.CryptoData.BigIntData;
 import zero_knowledge_proofs.CryptoData.CryptoData;
 import zero_knowledge_proofs.CryptoData.CryptoDataArray;
@@ -87,7 +89,7 @@ abstract public class VarianceToolkit {
 		if(numBits == 0) numBits = m.bitLength();
 		if(numBits < m.bitLength()) throw new InputMismatchException ("Need " + m.bitLength() + " bits.  Given " + numBits);
 		CryptoData[] unpackedEnv = env.getCryptoDataArray();
-		ECCurve curve = unpackedEnv[0].getECCurveData();
+		ECCurveWrapper curve = unpackedEnv[0].getECCurveData();
 		BigInteger order = curve.getOrder();
 		int orderBits = order.bitLength();
 		
@@ -188,9 +190,9 @@ abstract public class VarianceToolkit {
 		BigInteger m = ecBits.m;
 		if(!m.equals(dlBits.m)) return null;
 		CryptoData[] ecE = ecEnv.getCryptoDataArray();
-		ECCurve c = ecE[0].getECCurveData();
-		ECPoint ecG = ecE[0].getECPointData(c);
-		ECPoint ecGNeg = ecG.negate();
+		ECCurveWrapper c = ecE[0].getECCurveData();
+		ECPointWrapper ecG = ecE[0].getECPointData(c);
+		ECPointWrapper ecGNeg = ecG.negate();
 		
 		CryptoData[] dlE = dlEnv.getCryptoDataArray();
 		BigInteger p = dlE[0].getBigInt();
@@ -243,8 +245,8 @@ abstract public class VarianceToolkit {
 				in12 = new BigInteger(dlOrderBits, r);
 			}while(in12.compareTo(dlOrder) >= 0);
 			
-			ECPoint ecCommIn0 = ecBits.comm[i].getCommitment(ecEnv);
-			ECPoint ecCommIn1 = ecCommIn0.add(ecGNeg);
+			ECPointWrapper ecCommIn0 = ecBits.comm[i].getCommitment(ecEnv);
+			ECPointWrapper ecCommIn1 = ecCommIn0.add(ecGNeg);
 			
 			BigInteger dlCommIn0 = dlBits.comm[i].getCommitment();
 			BigInteger dlCommIn1 = dlCommIn0.multiply(dlGNeg).mod(p);
@@ -270,8 +272,8 @@ abstract public class VarianceToolkit {
 	{
 		CryptoData[] toReturn = new CryptoData[ecBits.length];
 		CryptoData[] e = ecEnv.getCryptoDataArray();
-		ECCurve c = e[0].getECCurveData();
-		ECPoint ecGInv = e[0].getECPointData(c).negate();
+		ECCurveWrapper c = e[0].getECCurveData();
+		ECPointWrapper ecGInv = e[0].getECPointData(c).negate();
 		
 		CryptoData[] eDL = dlEnv.getCryptoDataArray();
 		BigInteger m = eDL[0].getBigInt();
@@ -279,7 +281,7 @@ abstract public class VarianceToolkit {
 		
 		for(int i = 0; i < ecBits.length; i++)
 		{
-			ECPoint ecY = ecBits[i].getCommitment(ecEnv);
+			ECPointWrapper ecY = ecBits[i].getCommitment(ecEnv);
 			CryptoData ecY0 = new ECPointData(ecY);
 			CryptoData ecY1 = new ECPointData(ecY.add(ecGInv));
 			BigInteger dlY = dlBits[i].getCommitment();
@@ -294,9 +296,9 @@ abstract public class VarianceToolkit {
 	}
 	public static boolean bitConversionProver(CryptoData[] inputs, CryptoData ecEnv, CryptoData dlEnv, ObjectInputStream fromVerifier, ObjectOutputStream toVerifier) throws ClassNotFoundException, IOException, MultipleTrueProofException, NoTrueProofException, ArraySizesDoNotMatchException{
 		CryptoData[] ecE = ecEnv.getCryptoDataArray();
-		ECCurve c = ecE[0].getECCurveData();
-		ECPoint ecG = ecE[0].getECPointData(c);
-		ECPoint ecH = ecE[1].getECPointData(c);
+		ECCurveWrapper c = ecE[0].getECCurveData();
+		ECPointWrapper ecG = ecE[0].getECPointData(c);
+		ECPointWrapper ecH = ecE[1].getECPointData(c);
 		
 		CryptoData[] dlE = dlEnv.getCryptoDataArray();
 		BigInteger p = dlE[0].getBigInt();
@@ -321,9 +323,9 @@ abstract public class VarianceToolkit {
 	public static boolean bitConversionVerifier(CryptoData[] inputs, CryptoData ecEnv, CryptoData dlEnv, ObjectInputStream fromVerifier, ObjectOutputStream toVerifier, StringBuilder transcript, Random r) throws ClassNotFoundException, IOException, MultipleTrueProofException, NoTrueProofException, ArraySizesDoNotMatchException
 	{
 		CryptoData[] ecE = ecEnv.getCryptoDataArray();
-		ECCurve c = ecE[0].getECCurveData();
-		ECPoint ecG = ecE[0].getECPointData(c);
-		ECPoint ecH = ecE[1].getECPointData(c);
+		ECCurveWrapper c = ecE[0].getECCurveData();
+		ECPointWrapper ecG = ecE[0].getECPointData(c);
+		ECPointWrapper ecH = ecE[1].getECPointData(c);
 
 		BigInteger ecOrder = c.getOrder();
 		int ecOrderBits = ecOrder.bitLength();
@@ -373,7 +375,7 @@ abstract public class VarianceToolkit {
 	public static CryptoData createZeroKnowledgeProverInputsForShuffle(CryptoData[][] origTable, CryptoData[][] newTable, BigInteger[][] keyChanges, int[] shuffle, CryptoData environment, SecureRandom r)
 	{
 		CryptoData[] e = environment.getCryptoDataArray();
-		ECCurve c = e[0].getECCurveData();
+		ECCurveWrapper c = e[0].getECCurveData();
 		BigInteger order = c.getOrder();
 		int bits = order.bitLength();
 		
@@ -410,12 +412,12 @@ abstract public class VarianceToolkit {
 				for(int k = 0; k < 5; k++)
 				{
 					CryptoData[] newEntry = newRow[k].getCryptoDataArray();
-					ECPoint origCipher = entries[k][0].getECPointData(c);
-					ECPoint origCipherKey = entries[k][1].getECPointData(c);
-					ECPoint newCipher = newEntry[0].getECPointData(c);
-					ECPoint newCipherKey = newEntry[1].getECPointData(c);
-					ECPoint cipherDiff = newCipher.subtract(origCipher);
-					ECPoint cipherKeyDiff = newCipherKey.subtract(origCipherKey);
+					ECPointWrapper origCipher = entries[k][0].getECPointData(c);
+					ECPointWrapper origCipherKey = entries[k][1].getECPointData(c);
+					ECPointWrapper newCipher = newEntry[0].getECPointData(c);
+					ECPointWrapper newCipherKey = newEntry[1].getECPointData(c);
+					ECPointWrapper cipherDiff = newCipher.subtract(origCipher);
+					ECPointWrapper cipherKeyDiff = newCipherKey.subtract(origCipherKey);
 					CryptoData[] cell;
 					BigInteger temp = new BigInteger(bits, r);
 					while(temp.compareTo(order) >= 0) 
@@ -449,7 +451,7 @@ abstract public class VarianceToolkit {
 	{
 
 		CryptoData[] e = environment.getCryptoDataArray();
-		ECCurve c = e[0].getECCurveData();
+		ECCurveWrapper c = e[0].getECCurveData();
 		CryptoData[] layer1 = new CryptoData[3];
 		
 		for(int i = 0; i < 3; i++)
@@ -468,11 +470,11 @@ abstract public class VarianceToolkit {
 				for(int k = 0; k < 5; k++)
 				{	
 					CryptoData[] origEntry = origRow[k].getCryptoDataArray();
-					ECPoint origEntryM = origEntry[0].getECPointData(c);
-					ECPoint origEntryKey = origEntry[1].getECPointData(c);
+					ECPointWrapper origEntryM = origEntry[0].getECPointData(c);
+					ECPointWrapper origEntryKey = origEntry[1].getECPointData(c);
 					CryptoData[] newEntry = newRow[k].getCryptoDataArray();
-					ECPoint newEntryM = newEntry[0].getECPointData(c);
-					ECPoint newEntryKey = newEntry[1].getECPointData(c);
+					ECPointWrapper newEntryM = newEntry[0].getECPointData(c);
+					ECPointWrapper newEntryKey = newEntry[1].getECPointData(c);
 					CryptoData diffM = new ECPointData(newEntryM.subtract(origEntryM));
 					CryptoData diffKey = new ECPointData(newEntryKey.subtract(origEntryKey));
 					layer3[k] = new CryptoDataArray(new CryptoData[]{diffM, diffKey});
@@ -492,15 +494,15 @@ abstract public class VarianceToolkit {
 //			for(int j = 0; j < 5; j++)
 //			{
 //				CryptoData[] origEntry = origTable[i][j].getCryptoDataArray();
-//				ECPoint origCipher = origEntry[0].getECPointData(c);
-//				ECPoint origCipherKey = origEntry[1].getECPointData(c);
+//				ECPointWrapper origCipher = origEntry[0].getECPointData(c);
+//				ECPointWrapper origCipherKey = origEntry[1].getECPointData(c);
 //
 //				CryptoData[] layer3 = new CryptoData[3];
 //				for(int k = 0; k < 3; k++)
 //				{
 //					CryptoData[] newEntry = origTable[k][j].getCryptoDataArray();
-//					ECPoint cipherDiff = origCipher.subtract(newEntry[0].getECPointData(c));
-//					ECPoint cipherKeyDiff = origCipherKey.subtract(newEntry[1].getECPointData(c));
+//					ECPointWrapper cipherDiff = origCipher.subtract(newEntry[0].getECPointData(c));
+//					ECPointWrapper cipherKeyDiff = origCipherKey.subtract(newEntry[1].getECPointData(c));
 //					CryptoData[] cell;
 //					cell = new CryptoData[3];
 //					cell[0] = new ECPointData(cipherKeyDiff);
@@ -518,12 +520,12 @@ abstract public class VarianceToolkit {
 	public static CryptoData[][] getBasicTable(CryptoData environment)
 	{
 		CryptoData[] e = environment.getCryptoDataArray();
-		ECCurve c = e[0].getECCurveData();
+		ECCurveWrapper c = e[0].getECCurveData();
 		BigInteger order = c.getOrder();
-		ECPoint g = e[0].getECPointData(c);
+		ECPointWrapper g = e[0].getECPointData(c);
 		BigInteger twoInverse = BigInteger.valueOf(2).modInverse(order);
-		ECPoint _half = g.multiply(twoInverse);
-		ECPoint _quarter = _half.multiply(twoInverse);
+		ECPointWrapper _half = g.multiply(twoInverse);
+		ECPointWrapper _quarter = _half.multiply(twoInverse);
 		
 		
 		ECPointData inf = new ECPointData(c.getInfinity());
@@ -592,8 +594,8 @@ abstract public class VarianceToolkit {
 	public static CryptoData getTableCoorespondenceProverData(CryptoData[] row, CryptoData[] encryptions, BigInteger[] keys, CryptoData bitComm, BigInteger bitCommKey, boolean bit, boolean isHost, CryptoData environment, SecureRandom r)
 	{
 		CryptoData[] e = environment.getCryptoDataArray();
-		ECCurve c = e[0].getECCurveData();
-		ECPoint g = e[0].getECPointData(c);
+		ECCurveWrapper c = e[0].getECCurveData();
+		ECPointWrapper g = e[0].getECPointData(c);
 		BigInteger order = c.getOrder();
 		int bits = order.bitLength();
 		CryptoData[] inputs0 = new CryptoData[5];
@@ -694,8 +696,8 @@ abstract public class VarianceToolkit {
 	public static CryptoData getTableCoorespondenceVerifierData(CryptoData[] row, CryptoData[] encryptions, CryptoData bitComm, boolean isHost, CryptoData environment)
 	{
 		CryptoData[] e = environment.getCryptoDataArray();
-		ECCurve c = e[0].getECCurveData();
-		ECPoint g = e[0].getECPointData(c);
+		ECCurveWrapper c = e[0].getECCurveData();
+		ECPointWrapper g = e[0].getECPointData(c);
 		CryptoData[] inputs0 = new CryptoData[5];
 		CryptoData[] inputs1 = new CryptoData[5];
 		
@@ -742,9 +744,9 @@ abstract public class VarianceToolkit {
 	public static CryptoData getTableProofEnvironment(CryptoData baseEnvironment)
 	{
 		CryptoData[] e = baseEnvironment.getCryptoDataArray();
-		ECCurve c = e[0].getECCurveData();
-		ECPoint g = e[0].getECPointData(c);
-		ECPoint h = e[1].getECPointData(c);
+		ECCurveWrapper c = e[0].getECCurveData();
+		ECPointWrapper g = e[0].getECPointData(c);
+		ECPointWrapper h = e[1].getECPointData(c);
 		CryptoData revE = new CryptoDataArray(new CryptoData[] {new ECCurveData(c, h), new ECPointData(g)});
 		
 		CryptoData half = new CryptoDataArray(new CryptoData[] {revE, revE, revE, revE, revE});
@@ -754,9 +756,9 @@ abstract public class VarianceToolkit {
 	public static CryptoData getShuffleProofEnvironment(CryptoData baseEnvironment)
 	{
 		CryptoData[] e = baseEnvironment.getCryptoDataArray();
-		ECCurve c = e[0].getECCurveData();
-		ECPoint g = e[0].getECPointData(c);
-		ECPoint h = e[1].getECPointData(c);
+		ECCurveWrapper c = e[0].getECCurveData();
+		ECPointWrapper g = e[0].getECPointData(c);
+		ECPointWrapper h = e[1].getECPointData(c);
 		CryptoData revE = new CryptoDataArray(new CryptoData[] {new ECCurveData(c, h), new ECPointData(g)});
 		
 		CryptoData lowerLayer = new CryptoDataArray(new CryptoData[] {revE, revE, revE, revE, revE});
@@ -842,8 +844,8 @@ abstract public class VarianceToolkit {
 			throw new ArrayIndexOutOfBoundsException();
 		}
 		CryptoData[] e = baseEnvironment.getCryptoDataArray();
-		ECCurve c = e[0].getECCurveData();
-		ECPoint g = e[0].getECPointData(c);
+		ECCurveWrapper c = e[0].getECCurveData();
+		ECPointWrapper g = e[0].getECPointData(c);
 		if(n != 1)
 		{
 			CryptoData[] simulatedChallenges;
@@ -1117,11 +1119,11 @@ abstract public class VarianceToolkit {
 	{
 		return new CryptoDataArray(new CryptoData[] {publicInformation});
 	}
-	public static CryptoData createVarianceProverData(CryptoData keyData, BigInteger commitmentKey, ECPoint commitment, BigInteger balance, CryptoData baseEnvironment, boolean claimed, SecureRandom r)
+	public static CryptoData createVarianceProverData(CryptoData keyData, BigInteger commitmentKey, ECPointWrapper commitment, BigInteger balance, CryptoData baseEnvironment, boolean claimed, SecureRandom r)
 	{
 		CryptoData[] e = baseEnvironment.getCryptoDataArray();
-		ECCurve c = e[0].getECCurveData();
-		ECPoint g = e[0].getECPointData(c);
+		ECCurveWrapper c = e[0].getECCurveData();
+		ECPointWrapper g = e[0].getECPointData(c);
 		BigInteger order = c.getOrder();
 		CryptoData[] outer = new CryptoData[3];
 		CryptoData[] simulatedChallenges = new CryptoData[2];
@@ -1150,11 +1152,11 @@ abstract public class VarianceToolkit {
 		outer[1] = new CryptoDataArray(inner);
 		return new CryptoDataArray(outer);
 	}
-	public static CryptoData createVarianceVerifierData(CryptoData keyData, ECPoint commitment, BigInteger balance, CryptoData baseEnvironment)
+	public static CryptoData createVarianceVerifierData(CryptoData keyData, ECPointWrapper commitment, BigInteger balance, CryptoData baseEnvironment)
 	{
 		CryptoData[] e = baseEnvironment.getCryptoDataArray();
-		ECCurve c = e[0].getECCurveData();
-		ECPoint g = e[0].getECPointData(c);
+		ECCurveWrapper c = e[0].getECCurveData();
+		ECPointWrapper g = e[0].getECPointData(c);
 		
 		CryptoData[] outer = new CryptoData[2];
 		CryptoData[] inner = new CryptoData[2];
@@ -1172,9 +1174,9 @@ abstract public class VarianceToolkit {
 	public static CryptoData createVarianceEnvironment(CryptoData keyEnvironment,CryptoData baseEnvironment)
 	{
 		CryptoData[] e = baseEnvironment.getCryptoDataArray();
-		ECCurve c = e[0].getECCurveData();
-		ECPoint g = e[0].getECPointData(c);
-		ECPoint h = e[1].getECPointData(c);
+		ECCurveWrapper c = e[0].getECCurveData();
+		ECPointWrapper g = e[0].getECPointData(c);
+		ECPointWrapper h = e[1].getECPointData(c);
 		CryptoData reverseEnvironment = new CryptoDataArray(new CryptoData[] {new ECCurveData(c, h), new ECPointData(g)});
 		CryptoData[] outer = new CryptoData[2];
 		CryptoData[] inner = new CryptoData[2];
@@ -1284,8 +1286,8 @@ abstract public class VarianceToolkit {
 		{
 			throw new ArrayIndexOutOfBoundsException();
 		}
-		ECCurve c = commitmentEnvirionment.getCryptoDataArray()[0].getECCurveData();
-		ECPoint g = commitmentEnvirionment.getCryptoDataArray()[0].getECPointData(c);
+		ECCurveWrapper c = commitmentEnvirionment.getCryptoDataArray()[0].getECCurveData();
+		ECPointWrapper g = commitmentEnvirionment.getCryptoDataArray()[0].getECPointData(c);
 		if(n != 1)
 		{
 			CryptoData[] inner = new CryptoData[n];
@@ -1326,8 +1328,8 @@ abstract public class VarianceToolkit {
 			throw new ArrayIndexOutOfBoundsException();
 		}
 		CryptoData[] e = baseEnvironment.getCryptoDataArray();
-		ECCurve c = e[0].getECCurveData();
-		ECPoint g = e[0].getECPointData(c);
+		ECCurveWrapper c = e[0].getECCurveData();
+		ECPointWrapper g = e[0].getECPointData(c);
 		if(n != 1)
 		{
 			if(k == 1)
@@ -1420,8 +1422,8 @@ abstract public class VarianceToolkit {
 		}
 		
 		CryptoData[] e = baseEnvironment.getCryptoDataArray();
-		ECCurve c = e[0].getECCurveData();
-		ECPoint g = e[0].getECPointData(c);
+		ECCurveWrapper c = e[0].getECCurveData();
+		ECPointWrapper g = e[0].getECPointData(c);
 		if(n != 1)
 		{
 			if(k == 1)

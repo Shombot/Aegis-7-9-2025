@@ -10,6 +10,8 @@ import java.util.InputMismatchException;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.math.ec.ECPoint;
 
+import curve_wrapper.ECCurveWrapper;
+import curve_wrapper.ECPointWrapper;
 import zero_knowledge_proofs.CryptoData.BigIntData;
 import zero_knowledge_proofs.CryptoData.CryptoData;
 import zero_knowledge_proofs.CryptoData.CryptoDataArray;
@@ -45,12 +47,12 @@ public abstract class ZKToolkit {
 		CryptoData toReturn = null;
 		CryptoData[] temp = environment.getCryptoDataArray();
 		
-		ECCurve c = temp[0].getECCurveData();
-		ECPoint g = temp[0].getECPointData(c);
-		ECPoint y = temp[1].getECPointData(c);
+		ECCurveWrapper c = temp[0].getECCurveData();
+		ECPointWrapper g = temp[0].getECPointData(c);
+		ECPointWrapper y = temp[1].getECPointData(c);
 		
-		ECPoint cipher = g.multiply(message).add(y.multiply(ephemeralKey));
-		ECPoint cipherKey = g.multiply(ephemeralKey);
+		ECPointWrapper cipher = g.multiply(message).add(y.multiply(ephemeralKey));
+		ECPointWrapper cipherKey = g.multiply(ephemeralKey);
 		
 		toReturn = new CryptoDataArray(new ECPointData[] {new ECPointData(cipher), new ECPointData(cipherKey)});
 		
@@ -60,7 +62,7 @@ public abstract class ZKToolkit {
 	public static CryptoData createEncryption(BigInteger message, CryptoData environment, SecureRandom r)
 	{
 		CryptoData[] e = environment.getCryptoDataArray();
-		ECCurve c = e[0].getECCurveData();
+		ECCurveWrapper c = e[0].getECCurveData();
 		int bits = c.getOrder().bitLength();
 		BigInteger ephKey = new BigInteger(bits, r);
 		while(ephKey.compareTo(c.getOrder()) >= 0)
@@ -72,10 +74,10 @@ public abstract class ZKToolkit {
 		return cipher;
 	}
 
-	public static ECPoint decryptECElgamal(CryptoData encryption, BigInteger privateKey, CryptoData environment)
+	public static ECPointWrapper decryptECElgamal(CryptoData encryption, BigInteger privateKey, CryptoData environment)
 	{
 		CryptoData[] e = environment.getCryptoDataArray();
-		ECCurve c = e[0].getECCurveData();
+		ECCurveWrapper c = e[0].getECCurveData();
 		
 		CryptoData[] encArray = encryption.getCryptoDataArray();
 		
@@ -87,16 +89,16 @@ public abstract class ZKToolkit {
 
 		CryptoData[] temp = environment.getCryptoDataArray();
 		
-		ECCurve c = temp[0].getECCurveData();
-		ECPoint g = temp[0].getECPointData(c);
-		ECPoint y = temp[1].getECPointData(c);
+		ECCurveWrapper c = temp[0].getECCurveData();
+		ECPointWrapper g = temp[0].getECPointData(c);
+		ECPointWrapper y = temp[1].getECPointData(c);
 		
 		temp = orig.getCryptoDataArray();
-		ECPoint origCipher = temp[0].getECPointData(c);
-		ECPoint origCipherKey = temp[1].getECPointData(c);
+		ECPointWrapper origCipher = temp[0].getECPointData(c);
+		ECPointWrapper origCipherKey = temp[1].getECPointData(c);
 		
-		ECPoint newCipher = origCipher.add(y.multiply(ephemeralKeyChange));
-		ECPoint newCipherKey = origCipherKey.add(g.multiply(ephemeralKeyChange));
+		ECPointWrapper newCipher = origCipher.add(y.multiply(ephemeralKeyChange));
+		ECPointWrapper newCipherKey = origCipherKey.add(g.multiply(ephemeralKeyChange));
 		
 		temp = new CryptoData[2];
 		temp[0] = new ECPointData(newCipher);
@@ -106,11 +108,11 @@ public abstract class ZKToolkit {
 	public static boolean plaintextEqualityTest(CryptoData[] encryption1, CryptoData[] encryption2, BigInteger privateKey, ObjectInputStream[] in, ObjectOutputStream[] out, CryptoData environment, int prevParty, int nextParty, SecureRandom r) throws IOException, ClassNotFoundException, MultipleTrueProofException, NoTrueProofException, ArraySizesDoNotMatchException, CheaterException
 	{
 		CryptoData[] e = environment.getCryptoDataArray();
-		ECCurve c = e[0].getECCurveData();
+		ECCurveWrapper c = e[0].getECCurveData();
 		BigInteger order = c.getOrder();
 		int bitLength = order.bitLength();
 		
-		ECPoint[] diff = new ECPoint[2];
+		ECPointWrapper[] diff = new ECPointWrapper[2];
 		
 		diff[0] = encryption1[0].getECPointData(c).subtract(encryption2[0].getECPointData(c));
 		diff[1] = encryption1[1].getECPointData(c).subtract(encryption2[1].getECPointData(c));
@@ -130,7 +132,7 @@ public abstract class ZKToolkit {
 			out[i].flush();
 			otherComms[i] = (ECPedersenCommitment) in[i].readObject();
 		}
-		ECPoint[] randomized = new ECPoint[] {diff[0].multiply(message),diff[1].multiply(message)};
+		ECPointWrapper[] randomized = new ECPointWrapper[] {diff[0].multiply(message),diff[1].multiply(message)};
 		CryptoData randomizedDiff = new CryptoDataArray(randomized);
 		CryptoData[] otherRandomizedDiff = new CryptoDataArray[out.length];
 		for(int i = 0; i < out.length; i++)
@@ -143,7 +145,7 @@ public abstract class ZKToolkit {
 		for(int i = 0; i < out.length; i++)
 		{
 			otherRandomizedDiff[i] = (CryptoData) in[i].readObject();	
-			ECPoint[] otherRandomized = new ECPoint[2];
+			ECPointWrapper[] otherRandomized = new ECPointWrapper[2];
 			CryptoData[] oRD = otherRandomizedDiff[i].getCryptoDataArray();
 			otherRandomized[0] = oRD[0].getECPointData(c);
 			otherRandomized[1] = oRD[1].getECPointData(c);
@@ -192,8 +194,8 @@ public abstract class ZKToolkit {
 		return equal;
 	}
 	
-	private static CryptoData getPrechosenExponentVerifierInputs(ECPoint[] base, ECPoint[] exponentiatedBase,
-			ECPoint commitment) {
+	private static CryptoData getPrechosenExponentVerifierInputs(ECPointWrapper[] base, ECPointWrapper[] exponentiatedBase,
+			ECPointWrapper commitment) {
 		CryptoData[] inputs = new CryptoData[3];
 		inputs[0] = new ECPointData(base[0].add(base[1]));
 		inputs[1] = new ECPointData(exponentiatedBase[0].add(exponentiatedBase[1]));
@@ -201,8 +203,8 @@ public abstract class ZKToolkit {
 
 		return new CryptoDataArray(inputs);
 	}
-	private static CryptoData getPrechosenExponentProverInputs(ECPoint[] base, ECPoint[] exponentiatedBase,
-			ECPoint commitment, BigInteger exponent, BigInteger key, SecureRandom r) {
+	private static CryptoData getPrechosenExponentProverInputs(ECPointWrapper[] base, ECPointWrapper[] exponentiatedBase,
+			ECPointWrapper commitment, BigInteger exponent, BigInteger key, SecureRandom r) {
 		BigInteger order = base[0].getCurve().getOrder();
 		CryptoData[] inputs = new CryptoData[7];
 		inputs[0] = new ECPointData(base[0].add(base[1]));
@@ -225,9 +227,9 @@ public abstract class ZKToolkit {
 	public static CryptoData[] rangeProofFiatShamirConstruction(BigInteger m, BigInteger key, BigInteger min, BigInteger max, CryptoData environment, SecureRandom rand)
 	{
 		
-		ECCurve c;
-		ECPoint g;
-		ECPoint h;
+		ECCurveWrapper c;
+		ECPointWrapper g;
+		ECPointWrapper h;
 		BigInteger order;
 		
 		{
@@ -257,8 +259,8 @@ public abstract class ZKToolkit {
 		
 			for(int i = 0; i < numBits; i++)
 			{
-				ECPoint commitment = comms[i].getCommitment(environment);
-				ECPoint commitmentMinusOne = commitment.subtract(g);
+				ECPointWrapper commitment = comms[i].getCommitment(environment);
+				ECPointWrapper commitmentMinusOne = commitment.subtract(g);
 				bitComms[i] = new ECPointData(comms[i].getCommitment(environment));
 				CryptoData[] challenges = new CryptoData[2];
 				CryptoData[] outerPublicInputs = new CryptoData[2];
@@ -316,8 +318,8 @@ public abstract class ZKToolkit {
 			CryptoData[][] toReturnInner = new CryptoData[2][2];
 			for(int i = 0; i < numBits; i++)
 			{
-				ECPoint commitment = comms[i].getCommitment(environment);
-				ECPoint commitmentMinusOne = commitment.subtract(g);
+				ECPointWrapper commitment = comms[i].getCommitment(environment);
+				ECPointWrapper commitmentMinusOne = commitment.subtract(g);
 				bitComms[i] = new ECPointData(comms[i].getCommitment(environment));
 				CryptoData[] challenges = new CryptoData[2];
 				CryptoData[] outerPublicInputs = new CryptoData[2];
@@ -372,8 +374,8 @@ public abstract class ZKToolkit {
 			proofTranscripts = new CryptoData[numBits];
 			for(int i = 0; i < numBits; i++)
 			{
-				ECPoint commitment = comms[i].getCommitment(environment);
-				ECPoint commitmentMinusOne = commitment.subtract(g);
+				ECPointWrapper commitment = comms[i].getCommitment(environment);
+				ECPointWrapper commitmentMinusOne = commitment.subtract(g);
 				bitComms[i] = new ECPointData(comms[i].getCommitment(environment));
 				CryptoData[] challenges = new CryptoData[2];
 				CryptoData[] outerPublicInputs = new CryptoData[2];
@@ -427,9 +429,9 @@ public abstract class ZKToolkit {
 	}
 	private static final BigInteger TWO = BigInteger.valueOf(2);
 	public static boolean rangeProofFiatShamirVerify(CryptoData commitment, CryptoData[] transcript, BigInteger min, BigInteger max, CryptoData environment) {
-		ECCurve c;
-		ECPoint g;
-		ECPoint h;
+		ECCurveWrapper c;
+		ECPointWrapper g;
+		ECPointWrapper h;
 		BigInteger order;
 		
 		{
@@ -449,10 +451,10 @@ public abstract class ZKToolkit {
 		if((mag.equals(diff))) {
 			CryptoData[] bits = transcript[0].getCryptoDataArray();
 			CryptoData[] proofTranscripts = transcript[1].getCryptoDataArray();
-			ECPoint shiftProd = c.getInfinity();
+			ECPointWrapper shiftProd = c.getInfinity();
 			for(int i = bits.length - 1; i >= 0; i--){
 				CryptoData[] bitTranscript = proofTranscripts[i].getCryptoDataArray();
-				ECPoint p = bits[i].getECPointData(c);
+				ECPointWrapper p = bits[i].getECPointData(c);
 				shiftProd = shiftProd.multiply(TWO).add(p);
 				CryptoData publicInputs = new CryptoDataArray(new CryptoData[] {new CryptoDataArray(new CryptoData[] {bits[i]}), new CryptoDataArray(new CryptoData[]{new ECPointData(p.subtract(g))})});
 				try {
@@ -465,7 +467,7 @@ public abstract class ZKToolkit {
 					return false;
 				}
 			}
-			ECPoint commDiff = (commitment.getECPointData(c).subtract(g.multiply(min)));
+			ECPointWrapper commDiff = (commitment.getECPointData(c).subtract(g.multiply(min)));
 			if(!commDiff.equals(shiftProd)) {
 				System.out.println("Bad bits!");
 				return false;
@@ -475,10 +477,10 @@ public abstract class ZKToolkit {
 			CryptoData[] bits = transcript[0].getCryptoDataArray()[0].getCryptoDataArray();
 //			System.out.println(transcript[0].getCryptoDataArray()[0].getCryptoDataArray());
 			CryptoData[] proofTranscripts = transcript[1].getCryptoDataArray()[0].getCryptoDataArray();
-			ECPoint shiftProd = c.getInfinity();
+			ECPointWrapper shiftProd = c.getInfinity();
 			for(int i = bits.length - 1; i >= 0; i--){
 				CryptoData[] bitTranscript = proofTranscripts[i].getCryptoDataArray();
-				ECPoint p = bits[i].getECPointData(c);
+				ECPointWrapper p = bits[i].getECPointData(c);
 				shiftProd = shiftProd.multiply(TWO).add(p);
 				CryptoData publicInputs = new CryptoDataArray(new CryptoData[] {new CryptoDataArray(new CryptoData[] {bits[i]}), new CryptoDataArray(new CryptoData[]{new ECPointData(p.subtract(g))})});
 				try {
@@ -491,7 +493,7 @@ public abstract class ZKToolkit {
 					return false;
 				}
 			}
-			ECPoint commDiff = (commitment.getECPointData(c).subtract(g.multiply(min)));
+			ECPointWrapper commDiff = (commitment.getECPointData(c).subtract(g.multiply(min)));
 			if(!commDiff.equals(shiftProd)) {
 				System.out.println("Bad bits!");
 				return false; 
@@ -503,7 +505,7 @@ public abstract class ZKToolkit {
 			for(int i = bits.length - 1; i >= 0; i--){
 
 				CryptoData[] bitTranscript = proofTranscripts[i].getCryptoDataArray();
-				ECPoint p = bits[i].getECPointData(c);
+				ECPointWrapper p = bits[i].getECPointData(c);
 				shiftProd = shiftProd.multiply(TWO).add(p);
 				CryptoData publicInputs = new CryptoDataArray(new CryptoData[] {new CryptoDataArray(new CryptoData[] {bits[i]}), new CryptoDataArray(new CryptoData[]{new ECPointData(p.subtract(g))})});
 				try {
@@ -543,14 +545,14 @@ public abstract class ZKToolkit {
 		}while(toReturn.compareTo(max) >= 0);
 		return toReturn.add(min);
 	}
-	public static ECPoint[] multiCommitment(BigInteger m, BigInteger[] keys, CryptoData environment) {
+	public static ECPointWrapper[] multiCommitment(BigInteger m, BigInteger[] keys, CryptoData environment) {
 		CryptoData[] e = environment.getCryptoDataArray();
-		ECCurve c = e[0].getECCurveData();
-		ECPoint g = e[0].getECPointData(c);
-		ECPoint h = e[1].getECPointData(c);
+		ECCurveWrapper c = e[0].getECCurveData();
+		ECPointWrapper g = e[0].getECPointData(c);
+		ECPointWrapper h = e[1].getECPointData(c);
 		BigInteger order = c.getOrder();
 		
-		ECPoint[] toReturn = new ECPoint[keys.length];
+		ECPointWrapper[] toReturn = new ECPointWrapper[keys.length];
 		BigInteger dividend = m;
 		
 		for(int i = 0; i < keys.length; i++) {

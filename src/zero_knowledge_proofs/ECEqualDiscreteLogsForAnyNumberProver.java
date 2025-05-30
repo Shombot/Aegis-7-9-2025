@@ -6,6 +6,8 @@ import java.util.Arrays;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.math.ec.ECPoint;
 
+import curve_wrapper.ECCurveWrapper;
+import curve_wrapper.ECPointWrapper;
 import zero_knowledge_proofs.CryptoData.CryptoData;
 import zero_knowledge_proofs.CryptoData.CryptoDataArray;
 
@@ -47,12 +49,12 @@ public class ECEqualDiscreteLogsForAnyNumberProver extends ZKPProtocol {
 		CryptoData[] i = input.getCryptoDataArray();
 		CryptoData[] a_pack = a.getCryptoDataArray();
 		
-		ECCurve c = e[0].getECCurveData();
+		ECCurveWrapper c = e[0].getECCurveData();
 		BigInteger zNumber = resp[0].getBigInt();
 		for(int j = 0; j < k; j++) {
-			ECPoint g = e[j].getECPointData(c);
-			ECPoint y_g = i[j].getECPointData(c);
-			ECPoint a_g = a_pack[j].getECPointData(c);
+			ECPointWrapper g = e[j].getECPointData(c);
+			ECPointWrapper y_g = i[j].getECPointData(c);
+			ECPointWrapper a_g = a_pack[j].getECPointData(c);
 			if(!(y_g.multiply(challenge).add(a_g)).equals(g.multiply(zNumber))) {
 				return false;
 			}
@@ -66,14 +68,14 @@ public class ECEqualDiscreteLogsForAnyNumberProver extends ZKPProtocol {
 	@Override 
 	public CryptoData initialComm(CryptoData publicInput, CryptoData secrets, CryptoData environment)
 			throws MultipleTrueProofException, NoTrueProofException, ArraySizesDoNotMatchException {
-		ECPoint[] data = new ECPoint[k];
+		ECPointWrapper[] data = new ECPointWrapper[k];
 		CryptoData[] e = environment.getCryptoDataArray();
 //		CryptoData[] pI = publicInput.getCryptoDataArray();
 		CryptoData[] s = secrets.getCryptoDataArray();
-		ECCurve c = e[0].getECCurveData();
+		ECCurveWrapper c = e[0].getECCurveData();
 		BigInteger r = s[0].getBigInt();
 		for(int i = 0; i < k; i++) {
-			ECPoint g = e[i].getECPointData(c);
+			ECPointWrapper g = e[i].getECPointData(c);
 			data[i] = g.multiply(r);
 		}
 		
@@ -86,15 +88,15 @@ public class ECEqualDiscreteLogsForAnyNumberProver extends ZKPProtocol {
 	public CryptoData initialCommSim(CryptoData publicInput, CryptoData secrets, BigInteger challenge,
 			CryptoData environment)
 			throws MultipleTrueProofException, ArraySizesDoNotMatchException, NoTrueProofException {
-		ECPoint[] data = new ECPoint[k];
+		ECPointWrapper[] data = new ECPointWrapper[k];
 		CryptoData[] i = publicInput.getCryptoDataArray();
 		CryptoData[] s = secrets.getCryptoDataArray();
 		CryptoData[] e = environment.getCryptoDataArray();		//(y, z) 
-		ECCurve c = e[0].getECCurveData();
+		ECCurveWrapper c = e[0].getECCurveData();
 		BigInteger z = s[0].getBigInt();
 		for(int j = 0; j < k; j++) {
-			ECPoint g = e[j].getECPointData(c);
-			ECPoint y_g = i[j].getECPointData(c);
+			ECPointWrapper g = e[j].getECPointData(c);
+			ECPointWrapper y_g = i[j].getECPointData(c);
 			data[j] = g.multiply(z).add(y_g.multiply(challenge.negate()));
 		}
 		//a = g^z * y^(-c)

@@ -26,6 +26,9 @@ import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.math.ec.ECPoint;
 
+import curve_wrapper.BouncyCastlePoint;
+import curve_wrapper.ECCurveWrapper;
+import curve_wrapper.ECPointWrapper;
 import zero_knowledge_proofs.ArraySizesDoNotMatchException;
 import zero_knowledge_proofs.DLPedersenCommitment;
 import zero_knowledge_proofs.DLSchnorrProver;
@@ -102,12 +105,12 @@ public class AAEVerifierECEqualDiscreteLogExample {
 			}
 		}
 
-		ECPoint g = ECNamedCurveTable.getParameterSpec("secp256k1").getG();
-		ECCurve c = g.getCurve();	
+		ECPointWrapper g = new BouncyCastlePoint(ECNamedCurveTable.getParameterSpec("secp256k1").getG());
+		ECCurveWrapper c = g.getCurve();	
 		BigInteger order = c.getOrder();
-		ECPoint h = c.decodePoint((byte[]) in.readObject());
-		ECPoint gx = c.decodePoint((byte[]) in.readObject());
-		ECPoint hx = c.decodePoint((byte[]) in.readObject());
+		ECPointWrapper h = c.decodePoint((byte[]) in.readObject());
+		ECPointWrapper gx = c.decodePoint((byte[]) in.readObject());
+		ECPointWrapper hx = c.decodePoint((byte[]) in.readObject());
 		
 		SecureRandom rand = new SecureRandom();
 

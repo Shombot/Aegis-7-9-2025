@@ -6,6 +6,8 @@ import java.util.Arrays;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.math.ec.ECPoint;
 
+import curve_wrapper.ECCurveWrapper;
+import curve_wrapper.ECPointWrapper;
 import zero_knowledge_proofs.CryptoData.CryptoData;
 import zero_knowledge_proofs.CryptoData.CryptoDataArray;
 
@@ -17,12 +19,12 @@ public class ECEqualDiscreteLogsProver extends ZKPProtocol {
 	@Override
 	public CryptoData initialComm(CryptoData input, CryptoData environment)
 			throws MultipleTrueProofException, NoTrueProofException, ArraySizesDoNotMatchException {
-		ECPoint[] data = new ECPoint[2];
+		ECPointWrapper[] data = new ECPointWrapper[2];
 		CryptoData[] e = environment.getCryptoDataArray();
 		CryptoData[] i = input.getCryptoDataArray();
-		ECCurve c = e[0].getECCurveData();
-		ECPoint g = e[0].getECPointData(c);
-		ECPoint h = e[1].getECPointData(c);
+		ECCurveWrapper c = e[0].getECCurveData();
+		ECPointWrapper g = e[0].getECPointData(c);
+		ECPointWrapper h = e[1].getECPointData(c);
 		BigInteger r = i[2].getBigInt();
 		data[0] = g.multiply(r);
 		data[1] = h.multiply(r);
@@ -36,14 +38,14 @@ public class ECEqualDiscreteLogsProver extends ZKPProtocol {
 	@Override
 	public CryptoData initialCommSim(CryptoData input, BigInteger challenge, CryptoData environment)
 			throws MultipleTrueProofException, ArraySizesDoNotMatchException {
-		ECPoint[] data = new ECPoint[2];
+		ECPointWrapper[] data = new ECPointWrapper[2];
 		CryptoData[] i = input.getCryptoDataArray();
 		CryptoData[] e = environment.getCryptoDataArray();		//(y, z) 
-		ECCurve c = e[0].getECCurveData();
-		ECPoint g = e[0].getECPointData(c);
-		ECPoint h = e[1].getECPointData(c);
-		ECPoint y_g = i[0].getECPointData(c);
-		ECPoint y_h = i[1].getECPointData(c);
+		ECCurveWrapper c = e[0].getECCurveData();
+		ECPointWrapper g = e[0].getECPointData(c);
+		ECPointWrapper h = e[1].getECPointData(c);
+		ECPointWrapper y_g = i[0].getECPointData(c);
+		ECPointWrapper y_h = i[1].getECPointData(c);
 		BigInteger z = i[2].getBigInt();
 		//a = g^z * y^(-c)
 		//System.out.printf("c = %s\ninputs = %s\n", challenge.toString(16), input);
@@ -87,9 +89,9 @@ public class ECEqualDiscreteLogsProver extends ZKPProtocol {
 		CryptoData[] i = input.getCryptoDataArray();
 		CryptoData[] a_pack = a.getCryptoDataArray();
 		
-		ECCurve c = e[0].getECCurveData();
-		ECPoint g = e[0].getECPointData(c);
-		ECPoint h;
+		ECCurveWrapper c = e[0].getECCurveData();
+		ECPointWrapper g = e[0].getECPointData(c);
+		ECPointWrapper h;
 		try{
 			h = e[1].getECPointData(c);
 		} catch (Exception ex) {
@@ -99,11 +101,11 @@ public class ECEqualDiscreteLogsProver extends ZKPProtocol {
 			return false;
 		}
 		
-		ECPoint y_g = i[0].getECPointData(c);
-		ECPoint y_h = i[1].getECPointData(c);
+		ECPointWrapper y_g = i[0].getECPointData(c);
+		ECPointWrapper y_h = i[1].getECPointData(c);
 		BigInteger zNumber = resp[0].getBigInt();
-		ECPoint a_1 = a_pack[0].getECPointData(c);
-		ECPoint a_2 = a_pack[1].getECPointData(c);
+		ECPointWrapper a_1 = a_pack[0].getECPointData(c);
+		ECPointWrapper a_2 = a_pack[1].getECPointData(c);
 		boolean verify = (((y_g.multiply(challenge).add(a_1))).equals(g.multiply(zNumber)) && ((y_h.multiply(challenge).add(a_2))).equals(h.multiply(zNumber)));
 		if(!verify) {
 			System.out.printf("Error: %s != %s OR %s != %s\n", ((y_g.multiply(challenge).add(a_1))).normalize(), g.multiply(zNumber).normalize(), ((y_h.multiply(challenge).add(a_2))).normalize(), h.multiply(zNumber).normalize());
@@ -116,13 +118,13 @@ public class ECEqualDiscreteLogsProver extends ZKPProtocol {
 	@Override
 	public CryptoData initialComm(CryptoData publicInput, CryptoData secrets, CryptoData environment)
 			throws MultipleTrueProofException, NoTrueProofException, ArraySizesDoNotMatchException {
-		ECPoint[] data = new ECPoint[2];
+		ECPointWrapper[] data = new ECPointWrapper[2];
 		CryptoData[] e = environment.getCryptoDataArray();
 //		CryptoData[] pI = publicInput.getCryptoDataArray();
 		CryptoData[] s = secrets.getCryptoDataArray();
-		ECCurve c = e[0].getECCurveData();
-		ECPoint g = e[0].getECPointData(c);
-		ECPoint h = e[1].getECPointData(c);
+		ECCurveWrapper c = e[0].getECCurveData();
+		ECPointWrapper g = e[0].getECPointData(c);
+		ECPointWrapper h = e[1].getECPointData(c);
 		BigInteger r = s[0].getBigInt();
 		data[0] = g.multiply(r);
 		data[1] = h.multiply(r);
@@ -136,15 +138,15 @@ public class ECEqualDiscreteLogsProver extends ZKPProtocol {
 	public CryptoData initialCommSim(CryptoData publicInput, CryptoData secrets, BigInteger challenge,
 			CryptoData environment)
 			throws MultipleTrueProofException, ArraySizesDoNotMatchException, NoTrueProofException {
-		ECPoint[] data = new ECPoint[2];
+		ECPointWrapper[] data = new ECPointWrapper[2];
 		CryptoData[] i = publicInput.getCryptoDataArray();
 		CryptoData[] s = secrets.getCryptoDataArray();
 		CryptoData[] e = environment.getCryptoDataArray();		//(y, z) 
-		ECCurve c = e[0].getECCurveData();
-		ECPoint g = e[0].getECPointData(c);
-		ECPoint h = e[1].getECPointData(c);
-		ECPoint y_g = i[0].getECPointData(c);
-		ECPoint y_h = i[1].getECPointData(c);
+		ECCurveWrapper c = e[0].getECCurveData();
+		ECPointWrapper g = e[0].getECPointData(c);
+		ECPointWrapper h = e[1].getECPointData(c);
+		ECPointWrapper y_g = i[0].getECPointData(c);
+		ECPointWrapper y_h = i[1].getECPointData(c);
 		BigInteger z = s[0].getBigInt();
 		//a = g^z * y^(-c)
 		//System.out.printf("c = %s\ninputs = %s\n", challenge.toString(16), input);

@@ -5,6 +5,8 @@ import java.math.BigInteger;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.math.ec.ECPoint;
 
+import curve_wrapper.ECCurveWrapper;
+import curve_wrapper.ECPointWrapper;
 import zero_knowledge_proofs.CryptoData.CryptoData;
 import zero_knowledge_proofs.CryptoData.CryptoDataArray;
 
@@ -16,11 +18,11 @@ public class ECSchnorrProver extends ZKPProtocol {
 	@Override
 	public CryptoData initialComm(CryptoData input, CryptoData environment) {
 		if(input == null) return null;
-		ECPoint[] data = new ECPoint[1];
+		ECPointWrapper[] data = new ECPointWrapper[1];
 		CryptoData[] e = environment.getCryptoDataArray();
 		CryptoData[] i = input.getCryptoDataArray();
-		ECCurve c = e[0].getECCurveData();
-		ECPoint g = e[0].getECPointData(c);
+		ECCurveWrapper c = e[0].getECCurveData();
+		ECPointWrapper g = e[0].getECPointData(c);
 		BigInteger r = i[1].getBigInt();
 		data[0] = g.multiply(r);
 
@@ -33,14 +35,14 @@ public class ECSchnorrProver extends ZKPProtocol {
 	public CryptoData initialCommSim(CryptoData input, BigInteger challenge, CryptoData environment) {
 		if(input == null) return null;
 		
-		ECPoint[] data;
+		ECPointWrapper[] data;
 		CryptoData[] i;
 		CryptoData[] e;
-		ECCurve c = null;
-		ECPoint g;
-		ECPoint y;
+		ECCurveWrapper c = null;
+		ECPointWrapper g;
+		ECPointWrapper y;
 		try{
-			data = new ECPoint[1];
+			data = new ECPointWrapper[1];
 			i = input.getCryptoDataArray();
 			e = environment.getCryptoDataArray();		//(y, z) 
 			c = e[0].getECCurveData();
@@ -100,12 +102,12 @@ public class ECSchnorrProver extends ZKPProtocol {
 //		System.out.println(input);
 //		System.out.flush();
 		
-		ECCurve c = e[0].getECCurveData();
-		ECPoint g = e[0].getECPointData(c);
-		ECPoint y = i[0].getECPointData(c);
+		ECCurveWrapper c = e[0].getECCurveData();
+		ECPointWrapper g = e[0].getECPointData(c);
+		ECPointWrapper y = i[0].getECPointData(c);
 		
 		BigInteger z = resp[0].getBigInt();
-		ECPoint a = a_pack[0].getECPointData(c);
+		ECPointWrapper a = a_pack[0].getECPointData(c);
 		
 	//	return (a * y^c) mod p == (g^z) mod p 
 		if(!((y.multiply(challenge).add(a))).equals(g.multiply(z))) System.out.printf("V:\t%s ?= %s\n", (y.multiply(challenge).add(a)).normalize(),g.multiply(z).normalize());
@@ -116,11 +118,11 @@ public class ECSchnorrProver extends ZKPProtocol {
 	public CryptoData initialComm(CryptoData publicInput, CryptoData secrets, CryptoData environment)
 			throws MultipleTrueProofException, NoTrueProofException, ArraySizesDoNotMatchException {
 		if(publicInput == null || secrets == null) return null;
-		ECPoint[] data = new ECPoint[1];
+		ECPointWrapper[] data = new ECPointWrapper[1];
 		CryptoData[] e = environment.getCryptoDataArray();
 		CryptoData[] i = secrets.getCryptoDataArray();
-		ECCurve c = e[0].getECCurveData();
-		ECPoint g = e[0].getECPointData(c);
+		ECCurveWrapper c = e[0].getECCurveData();
+		ECPointWrapper g = e[0].getECPointData(c);
 		BigInteger r = i[0].getBigInt();
 		data[0] = g.multiply(r);
 
@@ -134,15 +136,15 @@ public class ECSchnorrProver extends ZKPProtocol {
 			throws MultipleTrueProofException, ArraySizesDoNotMatchException, NoTrueProofException {
 		
 		if(publicInput == null || secrets == null) return null;
-		ECPoint[] data;
+		ECPointWrapper[] data;
 		CryptoData[] i;
 		CryptoData[] s;
 		CryptoData[] e;
-		ECCurve c = null;
-		ECPoint g;
-		ECPoint y;
+		ECCurveWrapper c = null;
+		ECPointWrapper g;
+		ECPointWrapper y;
 		try{
-			data = new ECPoint[1];
+			data = new ECPointWrapper[1];
 			
 			i = publicInput.getCryptoDataArray(); 	//[y] 
 			s = secrets.getCryptoDataArray();		//[z]

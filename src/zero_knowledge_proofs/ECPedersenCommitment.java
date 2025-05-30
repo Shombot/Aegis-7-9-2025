@@ -7,6 +7,8 @@ import java.util.Base64;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.math.ec.ECPoint;
 
+import curve_wrapper.ECCurveWrapper;
+import curve_wrapper.ECPointWrapper;
 import zero_knowledge_proofs.CryptoData.CryptoData;
 
 public class ECPedersenCommitment extends PedersenCommitment implements Serializable {
@@ -28,30 +30,30 @@ public class ECPedersenCommitment extends PedersenCommitment implements Serializ
 	{
 		//g^m h^r 
 		CryptoData[] e = environment.getCryptoDataArray();
-		ECCurve c = e[0].getECCurveData();
-		ECPoint g = e[0].getECPointData(c);
-		ECPoint h = e[1].getECPointData(c);
-		ECPoint comm = g.multiply(message).add(h.multiply(keys));
+		ECCurveWrapper c = e[0].getECCurveData();
+		ECPointWrapper g = e[0].getECPointData(c);
+		ECPointWrapper h = e[1].getECPointData(c);
+		ECPointWrapper comm = g.multiply(message).add(h.multiply(keys));
 		data = comm.getEncoded(true);
 	}
-	private ECPedersenCommitment(ECPoint comm)
+	public ECPedersenCommitment(ECPointWrapper comm)
 	{
 		data = comm.getEncoded(true);
 	}
 
-	public ECPoint getCommitment(CryptoData environment) {
+	public ECPointWrapper getCommitment(CryptoData environment) {
 		CryptoData[] e = environment.getCryptoDataArray();
-		ECCurve c = e[0].getECCurveData();
+		ECCurveWrapper c = e[0].getECCurveData();
 		return c.decodePoint(data);
 	}
 
 	public boolean verifyCommitment(BigInteger message, BigInteger keys, CryptoData environment) {
 
 		CryptoData[] e = environment.getCryptoDataArray();
-		ECCurve c = e[0].getECCurveData();
-		ECPoint g = e[0].getECPointData(c);
-		ECPoint h = e[1].getECPointData(c);
-		ECPoint comm = g.multiply(message).add(h.multiply(keys));
+		ECCurveWrapper c = e[0].getECCurveData();
+		ECPointWrapper g = e[0].getECPointData(c);
+		ECPointWrapper h = e[1].getECPointData(c);
+		ECPointWrapper comm = g.multiply(message).add(h.multiply(keys));
 		return getCommitment(environment).equals(comm);
 	}
 
@@ -78,8 +80,8 @@ public class ECPedersenCommitment extends PedersenCommitment implements Serializ
 	public static ECPedersenCommitment product(ECPedersenCommitment[] comms, CryptoData environment)
 	{
 		CryptoData[] e = environment.getCryptoDataArray();
-		ECCurve c = e[0].getECCurveData();
-		ECPoint point = c.getInfinity();
+		ECCurveWrapper c = e[0].getECCurveData();
+		ECPointWrapper point = c.getInfinity();
 		for(int i = 0; i < comms.length; i++)
 		{
 			point = point.add(comms[i].getCommitment(environment));

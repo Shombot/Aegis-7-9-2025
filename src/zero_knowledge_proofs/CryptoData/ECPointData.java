@@ -1,13 +1,10 @@
 package zero_knowledge_proofs.CryptoData;
 
 import java.math.BigInteger;
-import java.security.spec.EllipticCurve;
 import java.util.Base64;
 
-import org.bouncycastle.jce.ECNamedCurveTable;
-import org.bouncycastle.jce.ECPointUtil;
-import org.bouncycastle.math.ec.ECCurve;
-import org.bouncycastle.math.ec.ECPoint;
+import curve_wrapper.ECCurveWrapper;
+import curve_wrapper.ECPointWrapper;
 
 public final class ECPointData extends CryptoData {
 	/**
@@ -15,9 +12,9 @@ public final class ECPointData extends CryptoData {
 	 */
 	private static final long serialVersionUID = 5968736215439976858L;
 	private byte[] data;
-	private transient ECPoint p;
+	private transient ECPointWrapper p;
 	
-	public ECPointData(ECPoint p)
+	public ECPointData(ECPointWrapper p)
 	{
 		data = p.getEncoded(true);
 		this.p = p;
@@ -28,7 +25,7 @@ public final class ECPointData extends CryptoData {
 	}
 	
 	@Override
-	public ECPoint getECPointData(ECCurve c) {
+	public ECPointWrapper getECPointData(ECCurveWrapper c) {
 		if(p != null) return p;
 		return c.decodePoint(data);
 	}

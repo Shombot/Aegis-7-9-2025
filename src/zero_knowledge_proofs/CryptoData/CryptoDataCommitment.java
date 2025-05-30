@@ -8,8 +8,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 
-import org.bouncycastle.math.ec.ECCurve;
-
+import curve_wrapper.ECCurveWrapper;
 import zero_knowledge_proofs.ZKToolkit;
 
 public class CryptoDataCommitment {
@@ -56,7 +55,7 @@ public class CryptoDataCommitment {
 		
 		CryptoData[] e = environment.getCryptoDataArray();
 		BigInteger b = new BigInteger(c.getBytes());
-		ECCurve curve = e[0].getECCurveData();
+		ECCurveWrapper curve = e[0].getECCurveData();
 		BigInteger order = curve.getOrder();
 		
 		commitments2 = new ArrayList<BigInteger>((b.bitLength()/order.bitLength()) + 1);
