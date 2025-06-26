@@ -6,6 +6,10 @@ public class BigIntegerByteArrayTest{
 	 
     public static void main(String[] args)
     {
+    	for(int i = 0; i < 50; i++) {
+    		System.out.printf("%s,=Average(B%d:B%d),=Average(C%d:C%d)\n", BigInteger.TWO.shiftLeft(i), 493+(10*i), 503+(10*i), 493+(10*i), 503+(10*i));
+    	}
+    	System.out.println();
     	BigInteger blah = BigInteger.valueOf(453215343);
     	byte[] blahBytes = blah.toByteArray();
     	System.out.println(blahBytes.length);

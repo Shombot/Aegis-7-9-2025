@@ -7,6 +7,7 @@ import net.i2p.crypto.eddsa.math.GroupElement;
 
 public class Ed25519Point implements ECPointWrapper {
 
+	private static final long serialVersionUID = -7059971861921115029L;
 	final private GroupElement point;
 	
 	public Ed25519Point(GroupElement point) {

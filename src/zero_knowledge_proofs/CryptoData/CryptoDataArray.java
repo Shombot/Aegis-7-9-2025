@@ -129,7 +129,6 @@ public class CryptoDataArray extends CryptoData {
 
 	@Override
 	public int size() {
-		// TODO Auto-generated method stub
 		return data.length;
 	}
 

@@ -317,6 +317,7 @@ public class PolyLock implements PolyLockInterface{
 				CryptoData[] innerMiddle = new CryptoData[4];
 				innerMiddle[0] = new CryptoDataArray(new ECPointWrapper[] {commitmentFromCoefficients.subtract(valueCommitments[i].getCommitment(environments[maxPos]))});
 				innerMiddle[1] = new CryptoDataArray(new ECPointWrapper[] {bitwiseCommitmentsCombined[i][0].getCommitment(environments[maxPos]).subtract(valueCommitments[i].getCommitment(environments[maxPos]))});
+				
 				innerMiddle[2] = new CryptoDataArray(new ECPointWrapper[] {bitwiseCommitmentsCombined[i][1].getCommitment(environments[i]).subtract(publicForms[i].getECPointData(environments[i].getCryptoDataArray()[0].getECCurveData()))});
 				
 				CryptoData[] baseConversion = new CryptoData[orders[i].bitLength()];

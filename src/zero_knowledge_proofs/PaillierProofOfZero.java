@@ -17,7 +17,7 @@ public class PaillierProofOfZero extends ZKPProtocol {
 		if (publicInput == null || secrets == null) return null;
 		try {
 			BigInteger[] data = new BigInteger[1];				//cipher = g^0*R^n
-			CryptoData[] e = environment.getCryptoDataArray();  // e = [g, n, n2]
+			CryptoData[] e = environment.getCryptoDataArray();  // e = [n, n2, g]
 			CryptoData[] s = secrets.getCryptoDataArray();		// s = [rp, r]
 			
 			BigInteger g = e[2].getBigInt();

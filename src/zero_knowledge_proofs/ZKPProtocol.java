@@ -670,7 +670,10 @@ public abstract class ZKPProtocol{
 	public BigInteger fiatShamirChallange(CryptoData publicInput, CryptoData a, CryptoData environment) {
 		try {
 			MessageDigest digest = MessageDigest.getInstance("SHA-256");
-			byte[][] bytes = new byte[][] {a.getBytes(),environment.getBytes(),publicInput.getBytes()};
+			byte[][] bytes = new byte[][] {
+				a.getBytes(),
+				environment.getBytes(),
+				publicInput.getBytes()};
 			BigInteger c = new BigInteger(digest.digest(Arrays.concatenate(bytes))).mod(BigInteger.ONE.shiftLeft(255));
 			return c;
 		} catch (NoSuchAlgorithmException e) {

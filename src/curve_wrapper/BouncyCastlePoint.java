@@ -150,5 +150,9 @@ public class BouncyCastlePoint implements ECPointWrapper {
 	public ECPoint getPoint() {
 		return p;
 	}
+	@Override
+	public String toString() {
+		return p.toString() + " (" + p.getClass() + ")";
+	}
 
 }

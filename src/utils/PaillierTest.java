@@ -185,8 +185,8 @@ public class PaillierTest {
 		BigInteger h = g1.modPow(x2, n);				//
 		BigInteger h2 = h.modPow(x, n);
 		BigInteger rsaCipher1 = g2.modPow(e, n);
-		BigInteger paillierCipher1 = g.modPow(message, n2).multiply(h2.modPow(n,n2));
-		
+		BigInteger paillierCipher1 = g.modPow(message, n2).multiply(h2.modPow(n,n2)).mod(n2);
+		BigInteger negCipher = paillierCipher1.modInverse(n2);
 		
 		
 		System.out.printf("p = %s, q = %s, n = %s, n2 = %s, lambda = %s, mu = %s, message = %s, r = %s, cipher1 = %s\n", p, q, n, n2, lambda, mu, message, r, cipher1);

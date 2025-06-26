@@ -73,6 +73,7 @@ public class ConcealedTimeLockedPuzzle implements Serializable{
 			this.delta = delta;
 			this.m = m;
 			this.h = h;
+			
 			initialize(rand);
 		} catch (NoSuchAlgorithmException e) {
 			// TODO Auto-generated catch block
@@ -97,7 +98,6 @@ public class ConcealedTimeLockedPuzzle implements Serializable{
 		if(m.signum() != 1 || h.signum() != 1) {
 			throw new ArithmeticException("m and h must be greater than 0");
 		}
-
 		//Pre-work
 		BigInteger n2 = n.pow(2);
 		BigInteger g = n.add(BigInteger.ONE);
@@ -387,5 +387,8 @@ public class ConcealedTimeLockedPuzzle implements Serializable{
 
 	public BigInteger getG() {
 		return n.add(BigInteger.ONE);
+	}
+	public BigInteger getDelta() {
+		return delta;
 	}
 }

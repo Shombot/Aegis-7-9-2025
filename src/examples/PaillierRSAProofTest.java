@@ -80,8 +80,8 @@ public class PaillierRSAProofTest {
 				BigInteger e = BigInteger.valueOf(i);
 
 				BigInteger pailCipher = g1.modPow(m, n2).multiply(r.modPow(n, n2)).mod(n2);
-				//			BigInteger pailCipher2 = g2.modPow(m, n2).multiply(r2.modPow(n, n2)).mod(n2);
-				//			BigInteger pailCipher3 = r2.modPow(n, n2);
+							BigInteger pailCipher2 = g2.modPow(m, n2).multiply(r2.modPow(n, n2)).mod(n2);
+							BigInteger pailCipher3 = r2.modPow(n, n2);
 				BigInteger rsaCipher = m.modPow(e, n);
 
 //			{// test equal messages different DL
@@ -96,18 +96,18 @@ public class PaillierRSAProofTest {
 //					System.out.println("preFail1");
 //				}
 //			}			
-//			{// test paillierHidesZero
-//				CryptoData publicInputs = new CryptoDataArray(new BigInteger[] {pailCipher3});
-//				CryptoData secrets = new CryptoDataArray(new BigInteger[] {ZKToolkit.random(n, rand), r2});
-//				CryptoData environment = new CryptoDataArray(new BigInteger[] {n, n2, g2});
-//				ZKPProtocol blah = new PaillierProofOfZero();
-//				CryptoData[] blahOut = blah.proveFiatShamir(publicInputs, secrets, environment);
-//				if(blah.verifyFiatShamir(publicInputs, blahOut[0], blahOut[1], environment)) {
-//					System.out.println("preSuccess2");
-//				} else {
-//					System.out.println("preFail2");
-//				}
-//			}
+			{// test paillierHidesZero
+				CryptoData publicInputs = new CryptoDataArray(new BigInteger[] {pailCipher3});
+				CryptoData secrets = new CryptoDataArray(new BigInteger[] {ZKToolkit.random(n, rand), r2});
+				CryptoData environment = new CryptoDataArray(new BigInteger[] {n, n2, g2});
+				ZKPProtocol blah = new PaillierProofOfZero();
+				CryptoData[] blahOut = blah.proveFiatShamir(publicInputs, secrets, environment);
+				if(blah.verifyFiatShamir(publicInputs, blahOut[0], blahOut[1], environment)) {
+					System.out.println("preSuccess2");
+				} else {
+					System.out.println("preFail2");
+				}
+			}
 				{
 					CryptoData publicInputs = new CryptoDataArray(new BigInteger[] {rsaCipher, pailCipher});
 					CryptoData secrets = new CryptoDataArray(new BigInteger[] {m, r});
