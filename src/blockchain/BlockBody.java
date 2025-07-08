@@ -79,7 +79,8 @@ public class BlockBody {
 		
 		//take the first 3 fields and encrypt them here. also deal with the hashData field. 
 		//need data, ptrData, hashPtrPrevBlock
-		//setSymKEncPtrData(publicKeyEncryption(ptrData, symmetricKey)); //this does not work, we need a separate symmetric key encryption function
+		
+		setSymKEncPtrData(publicKeyEncryption(ptrData, symmetricKey)); //this does not work, we need a separate symmetric key encryption function
 		setGroupKEncSymK(publicKeyEncryption(getSymmetricString(), BlockChain.groupKey));
 		setPubKeyEncHashPtrPrevBlock(publicKeyEncryption(hashPtrPrevBlock, patient.getPubKey()));
 	}

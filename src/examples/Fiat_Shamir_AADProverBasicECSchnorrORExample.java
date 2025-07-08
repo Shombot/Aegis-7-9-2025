@@ -198,7 +198,7 @@ public class Fiat_Shamir_AADProverBasicECSchnorrORExample {
 		CryptoData[] secretsTemp = new CryptoData[n + 1];
 		{
 			for(int i = 0; i < n; i++) {
-				if(i == i_real) { //inside the loop is copied from GPT
+				if(i == i_real) { 
 					BigInteger r = ZKToolkit.random(order, rand);
 			        secretsTemp[i] = new CryptoDataArray(new BigInteger[] {r, x[i]});
 			        simChallenges[i] = null; // null means "real proof"

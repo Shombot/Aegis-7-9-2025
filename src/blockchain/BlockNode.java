@@ -2,13 +2,13 @@ package blockchain;
 
 import java.io.IOException;
 
-import examples.Fiat_Shamir_AADProverBasicECSchnorrORExample;
-import examples.Returning_AADProverBasicECSchnorrORExample;
-import examples.Returning_AADVerifierBasicECSchnorrORExample;
+import examples.AND_Fiat_Shamir_AABProverBasicDLSchnorrANDExample;
+import examples.OR_Fiat_Shamir_AADProverBasicECSchnorrORExample;
 import zero_knowledge_proofs.ArraySizesDoNotMatchException;
 import zero_knowledge_proofs.MultipleTrueProofException;
 import zero_knowledge_proofs.NoTrueProofException;
 import zero_knowledge_proofs.CryptoData.CryptoData;
+import zero_knowledge_proofs.CryptoData.CryptoDataArray;
 
 public class BlockNode {
 	/*
@@ -42,24 +42,55 @@ public class BlockNode {
 		}
 		
 		
-		String[] arr = {"5001"};
-		int n;
-		int i_real;
-		boolean worked1;
-		boolean worked2;
-		CryptoData[] key1;
-		CryptoData[] key2;
+		String[] args = {"5001"};
+		int n_patient;
+		int i_real_patient;
+		int n_hospital;
+		int i_real_hospital;
+		CryptoData[] key1 = new CryptoDataArray[2];
+		CryptoData[] key2 = new CryptoDataArray[2];
 		
-		n = BlockChain.patients.size(); //patients size, hospital size, and num of blocks are all the same
-		i_real = (int) (Math.random() * n);
+		//change the output of the and and OR to work together
+		//patient proof
+		n_patient = BlockChain.patients.size(); //patients is the OR
+		i_real_patient = (int) (Math.random() * (n_patient - 1)); //n-1 will be the proof for the current block
 		
-		System.out.println(n + " " + i_real);
-		key1 = Fiat_Shamir_AADProverBasicECSchnorrORExample.prover(arr, n, i_real);
-		System.out.println("p1 works");
-		key2 = Fiat_Shamir_AADProverBasicECSchnorrORExample.prover(arr, n, i_real);
-		System.out.println("p2 works");
+		System.out.println(n_patient + " " + i_real_patient);
+		CryptoData[] patientOr = OR_Fiat_Shamir_AADProverBasicECSchnorrORExample.prover(args, n_patient, i_real_patient);
+		key1[0] = new CryptoDataArray(patientOr);
 		
-		header = new BlockHeader(key1, key2);
+		CryptoData[] patientAND = AND_Fiat_Shamir_AABProverBasicDLSchnorrANDExample.prover(args, 2);; //AND	call;
+		key1[1] = new CryptoDataArray(patientAND);
+		System.out.println("patient proof works");
+		
+		
+		
+		//hospital proof
+		n_hospital = BlockChain.hospitals.size(); //hospitals is the OR
+		i_real_hospital = (int) (Math.random() * (n_hospital - 1)); //n-1 will be the proof for the current block
+		
+		System.out.println(n_hospital + " " + i_real_hospital);
+		CryptoData[] hospitalOr = OR_Fiat_Shamir_AADProverBasicECSchnorrORExample.prover(args, n_hospital, i_real_hospital);
+		key2[0] = new CryptoDataArray(hospitalOr);
+		
+		CryptoData[] hospitalAND = AND_Fiat_Shamir_AABProverBasicDLSchnorrANDExample.prover(args, 2);; //AND call;
+		key2[1] = new CryptoDataArray(hospitalAND);
+		System.out.println("hospital proof works");
+		
+		
+		
+		
+		
+		/*
+		//hospital proof
+		n_hospital = BlockChain.hospitals.size(); //hospitals is the OR, the extra is for the AND
+		i_real_hospital = (int) (Math.random() * (n_hospital - 1)); //n-1 will be the proof for the current block
+		
+		System.out.println(n_hospital + " " + i_real_hospital);
+		key2 = AND_OR_Fiat_Shamir_AADProverBasicECSchnorrORExample.prover(args, n_hospital, i_real_hospital);
+		System.out.println("hospital proof works");
+		
+		header = new BlockHeader(key1, key2); */
 		
 		/*			
 		while(true) {

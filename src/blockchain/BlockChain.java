@@ -47,6 +47,36 @@ public class BlockChain {
         return groupKey;
 	}
 	
+	public static Patient generatePatient() {
+		String data = UUID.randomUUID().toString();
+		String dataPtr = UUID.randomUUID().toString();
+		String prevDataHashPtr = UUID.randomUUID().toString();
+		
+		while(true) {
+			try {
+				Patient p = new Patient(data, dataPtr, prevDataHashPtr);
+				return p;
+			} catch (NoSuchAlgorithmException e) {
+				continue;
+			}
+		}
+	}
+	
+	public static Hospital generateHospital() {
+		String data = UUID.randomUUID().toString();
+		String dataPtr = UUID.randomUUID().toString();
+		String prevDataHashPtr = UUID.randomUUID().toString();
+		
+		while(true) {
+			try {
+				Hospital h = new Hospital(data, dataPtr, prevDataHashPtr);
+				return h;
+			} catch (NoSuchAlgorithmException e) {
+				continue;
+			}
+		}
+	}
+	
 	public BlockNode generateBlockNode() {
 		String data;
 		String dataPtr;

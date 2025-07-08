@@ -13,28 +13,20 @@ public class experimentOneTester {
 		int numBlocks = 1; //number of blocks we are generating
 		
 		
+		//generate a random block for hashptrprevdata and hash it, rather than making it random
+		//add timestamp onto the block header
+		//hash the main block (in the blockNode)
+		//fix the ZKP OR and AND to make sure they work together
+		//make the condition codes a single 256 bit number
+		//update the timer to make sure it doesnt count the time to generate patients and hospitals
+		//DID I INCLUE THE HASH OF THE data off chain on the main block body/header?????
+		//need to creaye a symmetric key encryption and decryption function
 		for(int i = 0; i < numPatients; i++) {
-			data = UUID.randomUUID().toString();
-			dataPtr = UUID.randomUUID().toString();
-			prevDataHashPtr = UUID.randomUUID().toString(); //not actually hashing previous block, this will be a random value for this testing
-			
-			try {
-				BlockChain.patients.add(new Patient(data, dataPtr, prevDataHashPtr));
-			} catch (NoSuchAlgorithmException e) {
-				e.printStackTrace();
-			}
+			BlockChain.patients.add(BlockChain.generatePatient());
 		}
 		
 		for(int i = 0; i < numHospitals; i++) {
-			data = UUID.randomUUID().toString();
-			dataPtr = UUID.randomUUID().toString();
-			prevDataHashPtr = UUID.randomUUID().toString(); //not actually hashing previous block, this will be a random value for this testing
-			
-			try {
-				BlockChain.hospitals.add(new Hospital(data, dataPtr, prevDataHashPtr));
-			} catch (NoSuchAlgorithmException e) {
-				e.printStackTrace();
-			}
+			BlockChain.hospitals.add(BlockChain.generateHospital());
 		}
 		
 		BlockChain bc = new BlockChain(numBlocks); //change nanme of testing zkp

@@ -23,17 +23,9 @@ import java.security.SecureRandom;
 
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
-import org.bouncycastle.math.ec.ECCurve;
-import org.bouncycastle.math.ec.ECPoint;
 
-import curve_wrapper.BouncyCastleCurve;
-import curve_wrapper.BouncyCastlePoint;
-import curve_wrapper.ECCurveWrapper;
-import curve_wrapper.ECPointWrapper;
 import zero_knowledge_proofs.ArraySizesDoNotMatchException;
-import zero_knowledge_proofs.DLPedersenCommitment;
 import zero_knowledge_proofs.DLSchnorrProver;
-import zero_knowledge_proofs.ECPedersenCommitment;
 import zero_knowledge_proofs.ECSchnorrProver;
 import zero_knowledge_proofs.MultipleTrueProofException;
 import zero_knowledge_proofs.NoTrueProofException;
@@ -47,12 +39,9 @@ import zero_knowledge_proofs.CryptoData.CryptoDataArray;
 import zero_knowledge_proofs.CryptoData.ECCurveData;
 import zero_knowledge_proofs.CryptoData.ECPointData;
 
-public class Returning_AADProverBasicECSchnorrORExample {
-	public static CryptoData[] prover(String[] args, int n, int i_real) throws IOException, ClassNotFoundException, MultipleTrueProofException, NoTrueProofException, ArraySizesDoNotMatchException, InterruptedException {
-		//int n = 50000;
-		//int i_real = 29;
-		
-		System.setProperty("javax.net.ssl.trustStore", "resources/Client_Truststore");
+public class AND_Fiat_Shamir_AABProverBasicDLSchnorrANDExample {
+	public static CryptoData[] prover(String[] args, int n) throws IOException, ClassNotFoundException, MultipleTrueProofException, NoTrueProofException, ArraySizesDoNotMatchException {
+		/*System.setProperty("javax.net.ssl.trustStore", "resources/Client_Truststore");
 		System.setProperty("javax.net.ssl.keyStore", "resources/Server_Keystore");
 		System.setProperty("javax.net.ssl.trustStorePassword", "test123");
 		System.setProperty("javax.net.ssl.keyStorePassword", "test123");
@@ -106,50 +95,63 @@ public class Returning_AADProverBasicECSchnorrORExample {
 				in = new ObjectInputStream(s.getInputStream());
 				out = new ObjectOutputStream(s.getOutputStream());
 			}
+		}*/
+		
+		BigInteger p = new BigInteger("24880416976081453327269227415025938813219052085951345990705113268399560622403139595170216299210138771196484641733215886116725311718776421856732044338312259323822601223552732252647990694969821147034294500419912890477882931884396903888000463538905383304259801328910235181823051905905676739380166192113721547291207530241882010613367414068559043276569349187531228603838471412389267496765655075049933405554759096262547024500301321714755576808234887361152037293045288037601508143626276382971596423451229153003269013848297885338715969400319507575296464734849452692701646616863295870934354487214478315351871431026811844373163");
+		SecureRandom rand = new SecureRandom();
+		BigInteger g;
+		while(true) {
+			g = ZKToolkit.random(p, rand);
+			if(g.equals(BigInteger.ZERO)) continue;
+			if(g.equals(BigInteger.ONE)) continue;
+			if(g.modPow(BigInteger.valueOf(2), p).equals(BigInteger.ONE)) continue;
+			if(g.modPow(p.subtract(BigInteger.ONE).divide(BigInteger.valueOf(2)), p).equals(BigInteger.ONE)) continue;
+			break;
+		}
+		BigInteger h;
+		while(true) {
+			h = ZKToolkit.random(p, rand);
+			if(h.equals(BigInteger.ZERO)) continue;
+			if(h.equals(BigInteger.ONE)) continue;
+			if(h.modPow(BigInteger.valueOf(2), p).equals(BigInteger.ONE)) continue;
+			if(h.modPow(p.subtract(BigInteger.ONE).divide(BigInteger.valueOf(2)), p).equals(BigInteger.ONE)) continue;
+			break;
 		}
 		
-		SecureRandom rand = new SecureRandom();
-
-		ECPoint gUnwrapped = ECNamedCurveTable.getParameterSpec("secp256k1").getG();
-		ECCurve cUnwrapped = gUnwrapped.getCurve();	
-		BigInteger order = cUnwrapped.getOrder();
-		ECPointWrapper g = new BouncyCastlePoint(gUnwrapped);
-		ECCurveWrapper c = new BouncyCastleCurve(cUnwrapped); //up to this point, they are the same
-		ECPointWrapper h = g.multiply(ZKToolkit.random(order, rand));
+		/*out.writeObject(g);
+		out.writeObject(h);
+		out.flush(); */
 		
-		out.writeObject(h.getEncoded(true));
-		out.flush();
-		
-		BigInteger[] x = new BigInteger[n];
-		ECPointWrapper[] y = new ECPointWrapper[n];
+		BigInteger x[] = new BigInteger[n];
+		BigInteger y[] = new BigInteger[n];
 		
 		for(int i = 0; i < n; i++) {
-			x[i] = ZKToolkit.random(order, rand);
-			y[i] = g.multiply(x[i]);
-			out.writeObject(y[i].getEncoded(true));
+			x[i] = ZKToolkit.random(p, rand);
+			y[i] = g.modPow(x[i], p);
 		}
-
-		out.flush();
+		
+		
+		/*out.writeObject(y1);
+		out.writeObject(y2);
+		out.flush();*/
+		
+		/*ZKPProtocol proof;
+		{
+			ZKPProtocol innerProof = new DLSchnorrProver();
+			ZKPProtocol[] inner = new ZKPProtocol[] {innerProof, innerProof};
+			
+			proof = new ZeroKnowledgeAndProver(inner);
+		}*/
 		
 		ZKPProtocol proof;
 		{
 			ZKPProtocol[] inners = new ZKPProtocol[n];
 			for(int i = 0; i < n; i++) {
-				inners[i] = new ECSchnorrProver();
+				inners[i] = new DLSchnorrProver();
 			}
 			
-			proof = new ZeroKnowledgeOrProver(inners, order);
+			proof = new ZeroKnowledgeAndProver(inners);
 		}
-		
-		/*
-		ZKPProtocol proof;
-		{
-			ZKPProtocol innerProof = new ECSchnorrProver();
-			ZKPProtocol[] inner = new ZKPProtocol[] {innerProof, innerProof};
-			
-			proof = new ZeroKnowledgeOrProver(inner, order);
-		}
-		*/
 		
 		/*
 		 * Three main things needed for the proof.
@@ -159,108 +161,91 @@ public class Returning_AADProverBasicECSchnorrORExample {
 		 */
 		
 		//Create Public Inputs
+		/*CryptoData publicInputs;
+		{
+			CryptoData[] inner1 = new CryptoData[1];
+			CryptoData[] inner2 = new CryptoData[1];
+			inner1[0] = new BigIntData(y1);
+			inner2[0] = new BigIntData(y2);
+			publicInputs = new CryptoDataArray(new CryptoDataArray[] {new CryptoDataArray(inner1), new CryptoDataArray(inner2)});
+		}*/
+		
 		CryptoData publicInputs;
 		{
 			CryptoDataArray[] pub = new CryptoDataArray[n];
 			for(int i = 0; i < n; i++) {
 				CryptoData[] inner = new CryptoData[1];
-				inner[0] = new ECPointData(y[i]);
+				inner[0] = new BigIntData(y[i]);
 				pub[i] = new CryptoDataArray(inner);
 			}
 			publicInputs = new CryptoDataArray(pub);
 		}
 		
-		/*
-		CryptoData publicInputs;
-		{
-			CryptoData[] inner1 = new CryptoData[1];
-			CryptoData[] inner2 = new CryptoData[1];
-			inner1[0] = new ECPointData(y1);
-			inner2[0] = new ECPointData(y2);
-			publicInputs = new CryptoDataArray(new CryptoDataArray[] {new CryptoDataArray(inner1), new CryptoDataArray(inner2)});
-		}
-		 */
 		//Prover will create secrets section
-		
-		/*
-		CryptoData secrets;
+		/*CryptoData secrets;
 		{
-			BigInteger r1 = ZKToolkit.random(order, rand);
-			BigInteger r2 = ZKToolkit.random(order, rand);
-			BigInteger[] inner1 = new BigInteger[] {r1};
+			BigInteger r1 = ZKToolkit.random(p, rand);
+			BigInteger r2 = ZKToolkit.random(p, rand);
+			BigInteger[] inner1 = new BigInteger[] {r1, x1};
 			BigInteger[] inner2 = new BigInteger[] {r2, x2};
-			BigInteger[] simChal = new BigInteger[] {ZKToolkit.random(order, rand), null}; //null means its the real protocol
-			secrets = new CryptoDataArray(new CryptoDataArray[] {new CryptoDataArray(inner1), new CryptoDataArray(inner2), new CryptoDataArray(simChal)});
+			secrets = new CryptoDataArray(new CryptoDataArray[] {new CryptoDataArray(inner1), new CryptoDataArray(inner2)});
 		}*/
 		
+		
 		CryptoData secrets;
-		BigInteger[] simChallenges = new BigInteger[n];
-		CryptoData[] secretsTemp = new CryptoData[n + 1];
 		{
+			CryptoDataArray[] priv = new CryptoDataArray[n];
+			BigInteger[] r = new BigInteger[n];
 			for(int i = 0; i < n; i++) {
-				if(i == i_real) { 
-					BigInteger r = ZKToolkit.random(order, rand);
-			        secretsTemp[i] = new CryptoDataArray(new BigInteger[] {r, x[i]});
-			        simChallenges[i] = null; // null means "real proof"
-				} else {
-					BigInteger fakeR = ZKToolkit.random(order, rand);
-					secretsTemp[i] = new CryptoDataArray(new BigInteger[] {fakeR});
-					simChallenges[i] = ZKToolkit.random(order,  rand); //fake proof since this is not null
-				}
+				r[i] = ZKToolkit.random(p, rand);
+				BigInteger[] inner = new BigInteger[] {r[i], x[i]};
+				priv[i] = new CryptoDataArray(inner);
 			}
-			secretsTemp[n] = new CryptoDataArray(simChallenges);
+			secrets = new CryptoDataArray(priv);
 		}
-		secrets = new CryptoDataArray(secretsTemp); //This secrets section is most likely to be prone to errors
+		
+				
+		
 		
 		//Create Environment
-		/*
-		CryptoData env;	
+		/*CryptoData env;
 		{
-			CryptoData[] inner = new CryptoData[] {new ECCurveData(c, g)};
+			BigInteger[] inner = new BigInteger[] {p, g};
 			env = new CryptoDataArray(new CryptoDataArray[] {new CryptoDataArray(inner), new CryptoDataArray(inner)});
-		}
-		*/
+		}*/
+		
+		
 		
 		CryptoData env;	
 		CryptoData[] envTemp = new CryptoDataArray[n];
 		{
-			CryptoData[] inner = new CryptoData[] {new ECCurveData(c, g)};
+			BigInteger[] inner = new BigInteger[] {p, g};
 			for(int i = 0; i < n; i++) {
 				envTemp[i] = new CryptoDataArray(inner);
 			}
 			env = new CryptoDataArray(envTemp);
 		}
 		
-		/*
+		
+		
+		/* //not needed since this is fiat shamir (non interactive)
+		
 		CryptoData commEnv;
 		{
-			CryptoData[] inner = new CryptoData[] {new ECCurveData(c, g), new ECPointData(h)};
+			BigInteger[] inner = new BigInteger[] {p, g, h};
 			commEnv = new CryptoDataArray(inner);
-		}*/
-		
-		CryptoData commEnv;
-		{
-			CryptoData[] inners = new CryptoData[n];
-			for(int i = 0; i < n; i++) {
-				if(i == i_real) {
-					inners[i] = new ECPointData(h);
-				} else {
-					inners[i] = new ECCurveData(c, g);
-				}
-			}
-			commEnv = new CryptoDataArray(inners);
 		}
-		
 		proof.trueZKProve(publicInputs, secrets, env, commEnv, in, out);
+		*/ 
 		
 		CryptoData[] transcript = proof.proveFiatShamir(publicInputs, secrets, env);
 		
 		System.out.println(transcript[0]);
 		
-		out.writeObject(transcript);
-		out.flush();
-		
 		return transcript;
 		
+		/*out.writeObject(transcript);
+		out.flush();
+		*/
 	}
 }

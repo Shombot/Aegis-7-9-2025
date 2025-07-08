@@ -47,12 +47,13 @@ import zero_knowledge_proofs.CryptoData.CryptoDataArray;
 import zero_knowledge_proofs.CryptoData.ECCurveData;
 import zero_knowledge_proofs.CryptoData.ECPointData;
 
-public class Returning_AADProverBasicECSchnorrORExample {
+public class OR_Fiat_Shamir_AADProverBasicECSchnorrORExample {
+	//index n-1 will be the AND proof
 	public static CryptoData[] prover(String[] args, int n, int i_real) throws IOException, ClassNotFoundException, MultipleTrueProofException, NoTrueProofException, ArraySizesDoNotMatchException, InterruptedException {
 		//int n = 50000;
 		//int i_real = 29;
 		
-		System.setProperty("javax.net.ssl.trustStore", "resources/Client_Truststore");
+		/*System.setProperty("javax.net.ssl.trustStore", "resources/Client_Truststore");
 		System.setProperty("javax.net.ssl.keyStore", "resources/Server_Keystore");
 		System.setProperty("javax.net.ssl.trustStorePassword", "test123");
 		System.setProperty("javax.net.ssl.keyStorePassword", "test123");
@@ -106,8 +107,8 @@ public class Returning_AADProverBasicECSchnorrORExample {
 				in = new ObjectInputStream(s.getInputStream());
 				out = new ObjectOutputStream(s.getOutputStream());
 			}
-		}
-		
+		}*/
+
 		SecureRandom rand = new SecureRandom();
 
 		ECPoint gUnwrapped = ECNamedCurveTable.getParameterSpec("secp256k1").getG();
@@ -117,8 +118,8 @@ public class Returning_AADProverBasicECSchnorrORExample {
 		ECCurveWrapper c = new BouncyCastleCurve(cUnwrapped); //up to this point, they are the same
 		ECPointWrapper h = g.multiply(ZKToolkit.random(order, rand));
 		
-		out.writeObject(h.getEncoded(true));
-		out.flush();
+		//out.writeObject(h.getEncoded(true));
+		//out.flush();
 		
 		BigInteger[] x = new BigInteger[n];
 		ECPointWrapper[] y = new ECPointWrapper[n];
@@ -126,10 +127,10 @@ public class Returning_AADProverBasicECSchnorrORExample {
 		for(int i = 0; i < n; i++) {
 			x[i] = ZKToolkit.random(order, rand);
 			y[i] = g.multiply(x[i]);
-			out.writeObject(y[i].getEncoded(true));
+			//out.writeObject(y[i].getEncoded(true));
 		}
 
-		out.flush();
+		//out.flush();
 		
 		ZKPProtocol proof;
 		{
@@ -238,7 +239,7 @@ public class Returning_AADProverBasicECSchnorrORExample {
 			commEnv = new CryptoDataArray(inner);
 		}*/
 		
-		CryptoData commEnv;
+		/*CryptoData commEnv;
 		{
 			CryptoData[] inners = new CryptoData[n];
 			for(int i = 0; i < n; i++) {
@@ -249,16 +250,16 @@ public class Returning_AADProverBasicECSchnorrORExample {
 				}
 			}
 			commEnv = new CryptoDataArray(inners);
-		}
+		}*/
 		
-		proof.trueZKProve(publicInputs, secrets, env, commEnv, in, out);
+		//proof.trueZKProve(publicInputs, secrets, env, commEnv, in, out);
 		
 		CryptoData[] transcript = proof.proveFiatShamir(publicInputs, secrets, env);
 		
 		System.out.println(transcript[0]);
 		
-		out.writeObject(transcript);
-		out.flush();
+		//out.writeObject(transcript);
+		//out.flush();
 		
 		return transcript;
 		
