@@ -48,7 +48,11 @@ import zero_knowledge_proofs.CryptoData.ECCurveData;
 import zero_knowledge_proofs.CryptoData.ECPointData;
 
 public class AADVerifierBasicECSchnorrORExample {
-	public static void main(String[] args) throws IOException, ClassNotFoundException, MultipleTrueProofException, NoTrueProofException, ArraySizesDoNotMatchException {
+	public static void main(String[] args) throws IOException, ClassNotFoundException, MultipleTrueProofException, NoTrueProofException, ArraySizesDoNotMatchException, InterruptedException {
+		int n = 50000;
+		int i_real = 29;
+		
+		
 		System.setProperty("javax.net.ssl.trustStore", "resources/Client_Truststore");
 		System.setProperty("javax.net.ssl.keyStore", "resources/Server_Keystore");
 		System.setProperty("javax.net.ssl.trustStorePassword", "test123");
@@ -103,25 +107,40 @@ public class AADVerifierBasicECSchnorrORExample {
 				in = new ObjectInputStream(s.getInputStream());
 				out = new ObjectOutputStream(s.getOutputStream());
 			}
-		}
+		} 
 
 		ECPoint gUnwrapped = ECNamedCurveTable.getParameterSpec("secp256k1").getG();
 		ECCurve cUnwrapped = gUnwrapped.getCurve();	
 		BigInteger order = cUnwrapped.getOrder();
 		ECPointWrapper g = new BouncyCastlePoint(gUnwrapped);
-		ECCurveWrapper c = new BouncyCastleCurve(cUnwrapped);
+		ECCurveWrapper c = new BouncyCastleCurve(cUnwrapped); //up to this point, they are the same
 		ECPointWrapper h = c.decodePoint((byte[]) in.readObject());
-		ECPointWrapper y1 = c.decodePoint((byte[]) in.readObject());
-		ECPointWrapper y2 = c.decodePoint((byte[]) in.readObject());
+		
+		
+		ECPointWrapper[] y = new ECPointWrapper[n];
+		for(int i = 0; i < n; i++) {
+			y[i] = c.decodePoint((byte[]) in.readObject());
+		}
 		
 		SecureRandom rand = new SecureRandom();
-
+		
+		/*
 		ZKPProtocol proof;
 		{
 			ZKPProtocol innerProof = new ECSchnorrProver();
 			ZKPProtocol[] inner = new ZKPProtocol[] {innerProof, innerProof};
 			
 			proof = new ZeroKnowledgeOrProver(inner, order);
+		}*/
+		
+		ZKPProtocol proof;
+		{
+			ZKPProtocol[] inners = new ZKPProtocol[n];
+			for(int i = 0; i < n; i++) {
+				inners[i] = new ECSchnorrProver();
+			}
+			
+			proof = new ZeroKnowledgeOrProver(inners, order);
 		}
 		
 		
@@ -133,31 +152,93 @@ public class AADVerifierBasicECSchnorrORExample {
 		 */
 		
 		//Create Public Inputs
-		CryptoData publicInputs;
+		
+		/*CryptoData publicInputs;
 		{
 			CryptoData[] inner1 = new CryptoData[1];
 			inner1[0] = new ECPointData(y1);
 			CryptoData[] inner2 = new CryptoData[1];
 			inner2[0] = new ECPointData(y2);
 			publicInputs = new CryptoDataArray(new CryptoDataArray[] {new CryptoDataArray(inner1), new CryptoDataArray(inner2)});
+		}*/
+		
+		CryptoData publicInputs;
+		{
+			CryptoDataArray[] pub = new CryptoDataArray[n];
+			for(int i = 0; i < n; i++) {
+				CryptoData[] inner = new CryptoData[1];
+				inner[0] = new ECPointData(y[i]);
+				pub[i] = new CryptoDataArray(inner);
+			}
+			publicInputs = new CryptoDataArray(pub);
 		}
 
 		//Create Environment
-		CryptoData env2;
+		/*CryptoData env2;
 		{
 			CryptoData[] inner = new CryptoData[] {new ECCurveData(c, g)};
 			env2 = new CryptoDataArray(new CryptoDataArray[] {new CryptoDataArray(inner), new CryptoDataArray(inner)});
+		}*/
+		
+		CryptoData env2;
+		{
+			CryptoDataArray[] env2Arr = new CryptoDataArray[n];
+			for(int i = 0; i < n; i++) {
+				CryptoData[] inner = new CryptoData[] {new ECCurveData(c, g)};
+				env2Arr[i] = new CryptoDataArray(inner);
+			}
+			env2 = new CryptoDataArray(env2Arr);
 		}
-		CryptoData env;
+		
+		
+		/*CryptoData env;
 		{
 			CryptoData[] inner = new CryptoData[] {new ECCurveData(c, g), new ECPointData(h)};
 			env = new CryptoDataArray(new CryptoDataArray[] {new CryptoDataArray(inner), new CryptoDataArray(inner)});
+		}*/
+		
+		CryptoData env;
+		{
+			CryptoData[] inners = new CryptoData[n];
+			for(int i = 0; i < n; i++) {
+				if(i == i_real) {
+					inners[i] = new ECPointData(h);
+				} else {
+					inners[i] = new ECCurveData(c, g);
+				}
+			}
+			
+			CryptoData[] innerTemp = new CryptoData[n];
+			for(int i = 0; i < n; i++) {
+				innerTemp[i] = new CryptoDataArray(inners);
+			}
+
+			env = new CryptoDataArray(innerTemp);
 		}
-		CryptoData commEnv;
+		
+		
+		/*CryptoData commEnv;
 		{
 			CryptoData[] inner = new CryptoData[] {new ECCurveData(c, g), new ECPointData(h)};
 			commEnv = new CryptoDataArray(inner);
+		}*/
+		
+		
+		CryptoData commEnv;
+		{
+			CryptoData[] inners = new CryptoData[n];
+			for(int i = 0; i < n; i++) {
+				if(i == i_real) {
+					inners[i] = new ECPointData(h);
+				} else {
+					inners[i] = new ECCurveData(c, g);
+				}
+			}
+			commEnv = new CryptoDataArray(inners);
 		}
+		
+		
+		
 		
 		BigInteger[] challenge = new BigInteger[] {ZKToolkit.random(order, rand), ZKToolkit.random(order, rand)};
 		ECPedersenCommitment cCom = new ECPedersenCommitment(challenge[0], challenge[1], commEnv);
@@ -173,6 +254,17 @@ public class AADVerifierBasicECSchnorrORExample {
 			System.out.println("Horray 2!");
 		} else {
 			System.out.println("LIAR 2");
+		}
+		
+		System.out.println("Before sleep");
+		
+		try {
+			Thread.sleep(5000);
+			System.out.println("Sleeping works");
+		} catch (InterruptedException ie) {
+			System.out.println("Sleeping doesn't work");
+		} finally {
+			System.out.println("Sleep finally");
 		}
 	}
 }
