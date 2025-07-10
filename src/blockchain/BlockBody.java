@@ -38,6 +38,8 @@ import blockchain.BlockChain;
  * hash of the unencrypted off chain data for this block b
  * condition codes b
 */
+
+// Testing repo
 public class BlockBody {
 	private String symKEncPtrData;
 	private String groupKEncSymK;
