@@ -1,5 +1,5 @@
-# ZKProver
+# AegisBlock
 
-This is the Java implementation of the ZKProver Library, focused on the creation of complex zero-knowledge proofs using logical composition.
+This is an older Java implementation of AegisBlock, for the most up to date version, please check out https://github.com/Shombot/AegisBlock. The full details of this implementation can be found at arxiv.org/pdf/2508.11797. 
 
-This is a stub README as of 2025-05-08
+This is a stub README as of 08/30/2025
